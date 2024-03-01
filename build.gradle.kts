@@ -41,12 +41,12 @@ idea {
 val junitVersion: String by project
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.11")
+    api("org.slf4j:slf4j-api:2.0.12")
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.11")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
     testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
 }
 
