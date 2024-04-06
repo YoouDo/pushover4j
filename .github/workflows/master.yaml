@@ -30,6 +30,4 @@ jobs:
 
       # run gradle build
       - name: Build with Gradle
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew clean build sonarqube
+        run: ./gradlew clean build
