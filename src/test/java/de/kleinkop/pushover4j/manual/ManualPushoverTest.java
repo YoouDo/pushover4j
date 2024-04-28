@@ -16,15 +16,11 @@ public class ManualPushoverTest {
     public ManualPushoverTest() {
         pushoverClient = new PushoverHttpClient(
             System.getenv("PUSHOVER_TOKEN"),
-            System.getenv("PUSHOVER_USER"),
-            null,
-            null
+            System.getenv("PUSHOVER_USER")
         );
         failingPushoverClient = new PushoverHttpClient(
             "wrongtoken",
-            "wronguser",
-            null,
-            null
+            "wronguser"
         );
     }
 

@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/pushover4j.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/pushover4j.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/pushover4j.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/pushover4j.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/pushover4j.app.test.iml" filepath="$PROJECT_DIR$/.idea/modules/app/pushover4j.app.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/pushover4j.test.iml" filepath="$PROJECT_DIR$/.idea/modules/pushover4j.test.iml" />
     </modules>
   </component>
 </project>
