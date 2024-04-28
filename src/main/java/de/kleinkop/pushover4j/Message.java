@@ -4,11 +4,12 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Message {
-    private String message;
+    private final String message;
     private String title;
     private Priority priority = Priority.NORMAL;
     private String url;
@@ -21,7 +22,7 @@ public class Message {
     private boolean monospace = false;
     private Integer retry;
     private Integer expire;
-    private List<String> tags = new ArrayList<>();
+    private final List<String> tags = new ArrayList<>();
 
     private Message(String msg) {
         this.message = msg;
@@ -41,9 +42,17 @@ public class Message {
         this.monospace = monospace;
         this.retry = retry;
         this.expire = expire;
+        validate();
+    }
+
+    private void validate() {
         if (priority == Priority.EMERGENCY) {
-            Objects.requireNonNull(retry, "Retry value required for emergency messages");
-            Objects.requireNonNull(expire, "Expiration value required for emergency messages");
+            if (retry == null || retry < 0) {
+                throw new IllegalArgumentException("Retry value required for emergency messages");
+            }
+            if (expire == null || expire < 0) {
+                throw new IllegalArgumentException("Expiration value required for emergency messages");
+            }
         }
 
         if (html && monospace) {
@@ -104,7 +113,7 @@ public class Message {
     }
 
     public List<String> getTags() {
-        return tags;
+        return Collections.unmodifiableList(tags);
     }
 
     public static Builder of(String msg) {
@@ -183,7 +192,9 @@ public class Message {
             return this;
         }
 
-        public Message build() {
+        public Message build()
+        {
+            template.validate();
             return template;
         }
     }

@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class HttpClientMultipartFormBody {
     private static final Logger logger = LoggerFactory.getLogger(HttpClientMultipartFormBody.class);
@@ -23,6 +24,13 @@ public class HttpClientMultipartFormBody {
     public HttpClientMultipartFormBody plusIfSet(String name, boolean isSet, String value) {
         if (isSet) {
             return plus(name, value);
+        }
+        return this;
+    }
+
+    public HttpClientMultipartFormBody plusIfSet(String name, boolean isSet, Supplier<String> valueProvider) {
+        if (isSet) {
+            return plus(name, valueProvider.get());
         }
         return this;
     }

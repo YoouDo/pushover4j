@@ -19,6 +19,11 @@ public class SimplePushoverCall extends ManualPushoverTest {
                     .withMonospace(false)
                     .build()
             );
+
+        pushover()
+            .getSounds()
+            .sounds()
+            .forEach((s, s2) -> System.out.println(s + " -> " + s2));
     }
 
     public static void main(String[] args) {
