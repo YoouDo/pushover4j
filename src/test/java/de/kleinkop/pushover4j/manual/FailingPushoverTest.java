@@ -1,0 +1,22 @@
+package de.kleinkop.pushover4j.manual;
+
+import de.kleinkop.pushover4j.Message;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class FailingPushoverTest extends ManualPushoverTest {
+
+    private static final Logger log = LoggerFactory.getLogger(FailingPushoverTest.class);
+
+    void failingTest() {
+        var response = failingPushover().sendMessage(
+            Message.of("Bla").build()
+        );
+        log.info(response.toString());
+    }
+
+    public static void main(String[] args) {
+        new FailingPushoverTest().failingTest();
+    }
+}
