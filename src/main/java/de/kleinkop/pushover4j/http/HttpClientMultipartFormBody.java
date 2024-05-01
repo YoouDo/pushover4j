@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 public class HttpClientMultipartFormBody {
     private static final Logger logger = LoggerFactory.getLogger(HttpClientMultipartFormBody.class);
@@ -27,6 +28,13 @@ public class HttpClientMultipartFormBody {
         return this;
     }
 
+    public HttpClientMultipartFormBody plusIfSet(String name, boolean isSet, Supplier<String> valueProvider) {
+        if (isSet) {
+            return plus(name, valueProvider.get());
+        }
+        return this;
+    }
+
     public HttpClientMultipartFormBody plusIfSet(String name, String value) {
         if (value != null && !value.isBlank()) {
             return plus(name, value);
@@ -34,7 +42,7 @@ public class HttpClientMultipartFormBody {
         return this;
     }
 
-    public HttpClientMultipartFormBody plusIfSet(String name, List<String> values) {
+    public HttpClientMultipartFormBody plusIfSet(String name, Collection<String> values) {
         if (values != null && !values.isEmpty()) {
             return plus(name, String.join(",", values));
         }
@@ -66,7 +74,7 @@ public class HttpClientMultipartFormBody {
             "\r\n").getBytes(StandardCharsets.UTF_8);
 
         if ("token".equals(key)) {
-            logger.info("token=" + value);
+            logger.info("token={}", value);
             logger.info(Arrays.toString(result));
         }
         return result;
@@ -80,8 +88,7 @@ public class HttpClientMultipartFormBody {
 
         for (Map.Entry<String, Object> entry : content.entrySet()) {
             byteArrays.add(separator);
-            if (entry.getValue() instanceof File) {
-                File file = (File) entry.getValue();
+            if (entry.getValue() instanceof File file) {
                 try {
                     final Path path = Path.of(file.toURI());
                     final String mimeType = Files.probeContentType(path);
