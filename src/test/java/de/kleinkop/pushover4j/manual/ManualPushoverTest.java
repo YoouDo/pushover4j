@@ -1,6 +1,7 @@
 package de.kleinkop.pushover4j.manual;
 
 import de.kleinkop.pushover4j.PushoverClient;
+import de.kleinkop.pushover4j.TestUtils;
 import de.kleinkop.pushover4j.http.PushoverHttpClient;
 
 import java.io.File;
@@ -33,7 +34,7 @@ public class ManualPushoverTest {
     }
 
     protected File file(String filename) {
-        return new File(ManualPushoverTest.class.getResource(filename).getFile());
+        return new File(TestUtils.getResource(filename).getFile());
     }
 
     protected void waiting(Long timeInSeconds) {

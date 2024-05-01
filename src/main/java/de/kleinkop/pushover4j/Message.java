@@ -3,10 +3,9 @@ package de.kleinkop.pushover4j;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Message {
     private final String message;
@@ -14,7 +13,7 @@ public class Message {
     private Priority priority = Priority.NORMAL;
     private String url;
     private String urlTitle;
-    private List<String> devices = new ArrayList<>();
+    private final Set<String> devices = new HashSet<>();
     private LocalDateTime timestamp;
     private boolean html = true;
     private String sound;
@@ -22,27 +21,10 @@ public class Message {
     private boolean monospace = false;
     private Integer retry;
     private Integer expire;
-    private final List<String> tags = new ArrayList<>();
+    private final Set<String> tags = new HashSet<>();
 
     private Message(String msg) {
         this.message = msg;
-    }
-
-    public Message(String message, String title, Priority priority, String url, String urlTitle, List<String> devices, LocalDateTime timestamp, boolean html, String sound, File image, boolean monospace, Integer retry, Integer expire) {
-        this.message = message;
-        this.title = title;
-        this.priority = priority;
-        this.url = url;
-        this.urlTitle = urlTitle;
-        this.devices = devices;
-        this.timestamp = timestamp;
-        this.html = html;
-        this.sound = sound;
-        this.image = image;
-        this.monospace = monospace;
-        this.retry = retry;
-        this.expire = expire;
-        validate();
     }
 
     private void validate() {
@@ -80,7 +62,7 @@ public class Message {
         return urlTitle;
     }
 
-    public List<String> getDevices() {
+    public Set<String> getDevices() {
         return devices;
     }
 
@@ -112,8 +94,8 @@ public class Message {
         return expire;
     }
 
-    public List<String> getTags() {
-        return Collections.unmodifiableList(tags);
+    public Set<String> getTags() {
+        return Collections.unmodifiableSet(tags);
     }
 
     public static Builder of(String msg) {

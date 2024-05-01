@@ -6,5 +6,4 @@ public record ApplicationUsage(
     Integer limit,
     Integer remaining,
     LocalDateTime reset
-)
-{}
+) {}
