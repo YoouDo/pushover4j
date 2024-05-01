@@ -43,7 +43,7 @@ val resilience4jVersion: String by project
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
-    implementation("org.slf4j:slf4j-api:2.0.12")
+    implementation("org.slf4j:slf4j-api:2.0.13")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0")
 
