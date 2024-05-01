@@ -41,9 +41,9 @@ idea {
 val junitVersion: String by project
 
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.12")
+    api("org.slf4j:slf4j-api:2.0.13")
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.12")
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.13")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
