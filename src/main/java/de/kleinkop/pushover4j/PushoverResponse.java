@@ -10,5 +10,4 @@ public record PushoverResponse(
     String receipt,
     Integer canceled,
     ApplicationUsage applicationUsage
-
 ) {}

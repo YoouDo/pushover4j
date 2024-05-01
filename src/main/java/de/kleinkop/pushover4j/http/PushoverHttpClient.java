@@ -17,7 +17,6 @@ import io.github.resilience4j.retry.RetryConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -65,7 +64,7 @@ public class PushoverHttpClient implements PushoverClient {
         this.userToken = userToken;
 
         httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(this.httpTimeout))
+            .connectTimeout(Duration.ofSeconds(HTTP_TIMEOUT_IN_SECONDS))
             .build();
 
         retry = Retry.of(
@@ -90,7 +89,7 @@ public class PushoverHttpClient implements PushoverClient {
     private HttpRequest.Builder defaultRequest(String url) throws URISyntaxException {
         return HttpRequest.newBuilder()
             .uri(new URI(url))
-            .timeout(Duration.ofSeconds(15L))
+            .timeout(Duration.ofSeconds(httpTimeout))
             .version(HttpClient.Version.HTTP_1_1);
     }
 
@@ -121,9 +120,9 @@ public class PushoverHttpClient implements PushoverClient {
                 .build(UUID.randomUUID().toString());
 
             final HttpRequest request = defaultRequest(apiHost + API_MESSAGE_PATH)
-                .header("Content-Type", bodyData.getBoundary())
+                .header("Content-Type", bodyData.boundary())
                 .POST(
-                    HttpRequest.BodyPublishers.ofByteArrays(bodyData.getByteArrays())
+                    HttpRequest.BodyPublishers.ofByteArrays(bodyData.byteArrays())
                 )
                 .build();
 
@@ -201,7 +200,7 @@ public class PushoverHttpClient implements PushoverClient {
         }
     }
 
-    private HttpResponse<String> httpRequest(HttpRequest request) throws IOException, InterruptedException {
+    private HttpResponse<String> httpRequest(HttpRequest request) {
         final Supplier<HttpResponse<String>> supplier = () -> {
             try {
                 var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

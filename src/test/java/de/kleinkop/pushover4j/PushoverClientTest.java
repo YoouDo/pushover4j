@@ -51,7 +51,8 @@ public class PushoverClientTest {
             "user-token",
             5,
             10L
-        ).withApiHost("http://localhost:" + runtimeInfo.getHttpPort());
+        ).withApiHost("http://localhost:" + runtimeInfo.getHttpPort())
+            .withHttpTimeout(10L);
 
         invalidClient = new PushoverHttpClient(
             "invalid-token",
@@ -165,7 +166,7 @@ public class PushoverClientTest {
                 .withExpiration(200)
                 .withTag("TAG")
                 .withTimestamp(OffsetDateTime.now())
-                .withImage(new File(PushoverClientTest.class.getResource("/testdata/image.png").getFile()))
+                .withImage(new File(TestUtils.getResource("/testdata/image.png").getFile()))
                 .build()
         );
 

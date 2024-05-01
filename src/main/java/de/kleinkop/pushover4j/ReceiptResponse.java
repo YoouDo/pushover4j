@@ -14,5 +14,4 @@ public record ReceiptResponse(
     boolean expired,
     boolean calledBack,
     LocalDateTime calledBackAt
-) {
-}
+) {}

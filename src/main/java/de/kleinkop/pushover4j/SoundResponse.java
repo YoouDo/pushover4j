@@ -9,5 +9,4 @@ public record SoundResponse(
     Map<String,String> sounds,
     List<String> errors,
     String token
-) {
-}
+) {}
