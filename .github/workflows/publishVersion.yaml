@@ -48,4 +48,3 @@ jobs:
           title: pushover4k version ${{ env.TAG_NAME }}
           message: Build for version ${{ env.TAG_NAME }}
           device: ${{ secrets.PUSHOVER_DEVICES }}
-
