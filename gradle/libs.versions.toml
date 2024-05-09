@@ -2,7 +2,27 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-guava = "33.1.0-jre"
+slf4j = "2.0.13"
+junit = "5.10.1"
+jackson = "2.17.0"
+resilience4j = "2.1.0"
+wiremock = "3.0.1"
+hamcrest = "2.2"
 
 [libraries]
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j"}
+
+jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "1.10.2" }
+
+jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
+
+resilience4j-all = { module = "io.github.resilience4j:resilience4j-all", version.ref = "resilience4j"}
+
+wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
+
+hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
+
