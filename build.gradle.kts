@@ -38,8 +38,8 @@ idea {
     }
 }
 
-val junitVersion: String by project
-val resilience4jVersion: String by project
+val junitVersion = "5.10.2"
+val resilience4jVersion = "2.1.0"
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
