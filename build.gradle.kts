@@ -1,4 +1,3 @@
-
 buildscript {
     repositories {
         mavenCentral()
@@ -15,17 +14,19 @@ plugins {
     id("org.sonarqube") version "5.0.0.4638"
 }
 
+group = "de.kleinkop"
+version = "1.0.0"
+
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
-    mavenLocal()
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion = JavaLanguageVersion.of(17)
     }
+    withSourcesJar()
 }
 
 idea {
@@ -38,23 +39,21 @@ idea {
     }
 }
 
-val junitVersion = "5.10.2"
-val resilience4jVersion = "2.1.0"
-
 dependencies {
-    api("org.slf4j:slf4j-api:2.0.13")
-    implementation("org.slf4j:slf4j-api:2.0.13")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0")
+    api(libs.slf4j.api)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.jsr310)
 
-    implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
+    implementation(libs.resilience4j.all)
+
     // testing
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.13")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.2")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:3.0.1")
-    testImplementation("org.hamcrest:hamcrest:2.2")
+    testRuntimeOnly(libs.slf4j.simple)
+    testImplementation(libs.jupiter.api)
+    testRuntimeOnly(libs.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform)
+
+    testImplementation(libs.wiremock.jre8)
+    testImplementation(libs.hamcrest)
 }
 
 testing {
@@ -62,9 +61,7 @@ testing {
         // Configure the built-in test suite
         val test by getting(JvmTestSuite::class) {
             // Use JUnit Jupiter test framework
-            useJUnitJupiter(junitVersion)
+            useJUnitJupiter(libs.versions.junit)
         }
     }
 }
-
-
