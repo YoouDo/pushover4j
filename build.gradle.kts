@@ -39,13 +39,13 @@ idea {
 }
 
 val junitVersion = "5.10.2"
-val resilience4jVersion = "2.1.0"
+val resilience4jVersion = "2.2.0"
 
 dependencies {
     api("org.slf4j:slf4j-api:2.0.13")
     implementation("org.slf4j:slf4j-api:2.0.13")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1")
 
     implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
     // testing
