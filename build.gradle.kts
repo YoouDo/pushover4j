@@ -32,8 +32,8 @@ java {
 idea {
     module {
         inheritOutputDirs = false
-        outputDir = file("${layout.buildDirectory}buildDir/classes/java/main")
-        testOutputDir = file("${layout.buildDirectory}/classes/java/test")
+        outputDir = layout.buildDirectory.dir("classes/java/main").get().asFile
+        testOutputDir = layout.buildDirectory.dir("classes/java/test").get().asFile
         isDownloadSources = true
         isDownloadJavadoc = true
     }
