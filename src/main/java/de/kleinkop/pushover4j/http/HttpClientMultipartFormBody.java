@@ -21,6 +21,13 @@ public class HttpClientMultipartFormBody {
         return this;
     }
 
+    public HttpClientMultipartFormBody plusIfSet(String name, Object value) {
+        if (value != null) {
+            return plus(name, String.valueOf(value));
+        }
+        return this;
+    }
+
     public HttpClientMultipartFormBody plusIfSet(String name, boolean isSet, String value) {
         if (isSet) {
             return plus(name, value);
@@ -73,9 +80,9 @@ public class HttpClientMultipartFormBody {
             value +
             "\r\n").getBytes(StandardCharsets.UTF_8);
 
-        if ("token".equals(key)) {
-            logger.info("token={}", value);
-            logger.info(Arrays.toString(result));
+        if ("token".equals(key) && logger.isDebugEnabled()) {
+            logger.debug("token={}", value);
+            logger.debug(Arrays.toString(result));
         }
         return result;
     }

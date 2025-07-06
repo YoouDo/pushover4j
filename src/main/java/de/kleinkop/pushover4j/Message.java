@@ -1,7 +1,6 @@
 package de.kleinkop.pushover4j;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,7 +13,7 @@ public class Message {
     private String url;
     private String urlTitle;
     private final Set<String> devices = new HashSet<>();
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
     private boolean html = true;
     private String sound;
     private File image;
@@ -22,6 +21,7 @@ public class Message {
     private Integer retry;
     private Integer expire;
     private final Set<String> tags = new HashSet<>();
+    private Integer ttl;
 
     private Message(String msg) {
         this.message = msg;
@@ -66,7 +66,7 @@ public class Message {
         return devices;
     }
 
-    public LocalDateTime getTimestamp() {
+    public OffsetDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -96,6 +96,10 @@ public class Message {
 
     public Set<String> getTags() {
         return Collections.unmodifiableSet(tags);
+    }
+
+    public Integer getTtl() {
+        return ttl;
     }
 
     public static Builder of(String msg) {
@@ -140,7 +144,7 @@ public class Message {
         }
 
         public Builder withTimestamp(OffsetDateTime dateTime) {
-            this.template.timestamp = Utils.toLocalDateTimeUTC(dateTime);
+            this.template.timestamp = dateTime;
             return this;
         }
 
@@ -171,6 +175,11 @@ public class Message {
 
         public Builder withExpiration(int expiration) {
             this.template.expire = expiration;
+            return this;
+        }
+
+        public Builder withTtl(int ttl) {
+            this.template.ttl = ttl;
             return this;
         }
 

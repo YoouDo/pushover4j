@@ -8,12 +8,6 @@ import de.kleinkop.pushover4j.PushoverResponse;
 import de.kleinkop.pushover4j.ReceiptResponse;
 import de.kleinkop.pushover4j.SoundResponse;
 
-import io.github.resilience4j.core.IntervalFunction;
-import io.github.resilience4j.decorators.Decorators;
-import io.github.resilience4j.retry.Retry;
-
-import io.github.resilience4j.retry.RetryConfig;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +19,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletionException;
 
 public class PushoverHttpClient implements PushoverClient {
     private static final Logger logger = LoggerFactory.getLogger(PushoverHttpClient.class);
@@ -43,12 +37,10 @@ public class PushoverHttpClient implements PushoverClient {
     private final String appToken;
     private final String userToken;
 
-    private final Retry retry;
-
     private String apiHost = "https://api.pushover.net";
     private Long httpTimeout = HTTP_TIMEOUT_IN_SECONDS;
 
-    final private HttpClient httpClient;
+    final private HttpRetry httpRetry;
 
     public PushoverHttpClient(String appToken, String userToken) {
         this(appToken, userToken, RETRY_ATTEMPTS, DEFAULT_RETRY_INTERVAL);
@@ -63,17 +55,11 @@ public class PushoverHttpClient implements PushoverClient {
         this.appToken = appToken;
         this.userToken = userToken;
 
-        httpClient = HttpClient.newBuilder()
+        HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(HTTP_TIMEOUT_IN_SECONDS))
             .build();
 
-        retry = Retry.of(
-            "retry-pushover",
-            RetryConfig.custom()
-                .maxAttempts(retryAttempts)
-                .intervalFunction(IntervalFunction.of(retryInterval))
-                .build()
-        );
+        httpRetry = new HttpRetry(httpClient, retryAttempts, retryInterval);
     }
 
     public PushoverHttpClient withApiHost(String apiHost) {
@@ -100,7 +86,7 @@ public class PushoverHttpClient implements PushoverClient {
                 .plus("token", this.appToken)
                 .plus("user", this.userToken)
                 .plus("message", msg.getMessage())
-                .plus("priority", "" + msg.getPriority().getValue())
+                .plusIfSet("priority", msg.getPriority().getValue())
                 .plusIfSet("title", msg.getTitle())
                 .plusIfSet("url", msg.getUrl())
                 .plusIfSet("url_title", msg.getUrlTitle())
@@ -110,13 +96,14 @@ public class PushoverHttpClient implements PushoverClient {
                 .plusIfSet(
                     "timestamp",
                     msg.getTimestamp() != null,
-                    () -> "" + msg.getTimestamp().toEpochSecond(ZoneOffset.UTC)
+                    () -> String.valueOf(msg.getTimestamp().toEpochSecond())
                 )
                 .plusIfSet("device", msg.getDevices())
-                .plusIfSet("retry", "" + msg.getRetry())
-                .plusIfSet("expire", "" + msg.getExpire())
+                .plusIfSet("retry", msg.getRetry())
+                .plusIfSet("expire", msg.getExpire())
                 .plusIfSet("tags", msg.getTags())
                 .plusImageIfSet("attachment", msg.getImage())
+                .plusIfSet("ttl", msg.getTtl())
                 .build(UUID.randomUUID().toString());
 
             final HttpRequest request = defaultRequest(apiHost + API_MESSAGE_PATH)
@@ -201,24 +188,16 @@ public class PushoverHttpClient implements PushoverClient {
     }
 
     private HttpResponse<String> httpRequest(HttpRequest request) {
-        final Supplier<HttpResponse<String>> supplier = () -> {
-            try {
-                var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() >= 500) {
-                    throw new RuntimeException("Http call failed with status code: " + response.statusCode());
-                }
-                return response;
-            } catch (Exception e) {
-                throw new RuntimeException("httpClient failed", e);
+        try {
+            return httpRetry.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (CompletionException completionException) {
+            if (completionException.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) completionException.getCause();
             }
-        };
-        return Decorators.ofSupplier(supplier)
-            .withRetry(retry)
-            .withFallback(throwable -> {
-                throw new RuntimeException("Call to Pushover API failed", throwable);
-            })
-            .decorate()
-            .get();
+            throw new RuntimeException("Call to Pushover API failed", completionException.getCause());
+        } catch (Exception e) {
+            throw new RuntimeException("Call to Pushover API failed", e);
+        }
     }
 
     private String apiSoundsUrl() {
