@@ -32,7 +32,7 @@ public class SimplePushoverCall extends ManualPushoverTest {
 
         var pushoverResponse = pushover()
             .sendMessage(
-                Message.of("Testnachricht: äöüß \uD83E\uDD37")
+                Message.of("Testnachricht: äöüß \uD83E\uDD37 <br/>This message will destroy itself in 30 seconds!")
                     .withTitle("A title (äöüß)")
                     .withPriority(Priority.NORMAL)
                     .withDevice(device)
@@ -42,9 +42,10 @@ public class SimplePushoverCall extends ManualPushoverTest {
                     .withImage(file)
                     .withUrl("https://www.example.com")
                     .withUrlTitle("This is an example URL.")
-                    .withSound(sound)
-                    .build()
+                    .withTtl(30)
+                    .withSound(sound).build()
             );
+
         log.info(pushoverResponse.toString());
         assertEquals(1, pushoverResponse.status());
     }

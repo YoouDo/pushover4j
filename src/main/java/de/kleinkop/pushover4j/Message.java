@@ -113,11 +113,23 @@ public class Message {
             this.template = new Message(msg);
         }
 
+        /**
+         * Sets the title for the message being built.
+         *
+         * @param title the title to be set for the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withTitle(String title) {
             this.template.title = title;
             return this;
         }
 
+        /**
+         * Sets the priority for the message being built.
+         *
+         * @param priority the priority level to be assigned to the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withPriority(Priority priority) {
             this.template.priority = priority;
             return this;
@@ -168,16 +180,37 @@ public class Message {
             return this;
         }
 
+        /**
+         * Sets the retry interval for the emergency message being built.
+         * This value specifies the time in seconds between retry attempts.
+         *
+         * @param retry the retry interval in seconds
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withRetry(int retry) {
             this.template.retry = retry;
             return this;
         }
 
+        /**
+         * Sets the expiration time for the emergency message being built.
+         * This value indicates the duration, in seconds, after which the message becomes invalid.
+         *
+         * @param expiration the expiration duration in seconds
+         * @return the {@code Builder} instance to enable method chaining
+         */
         public Builder withExpiration(int expiration) {
             this.template.expire = expiration;
             return this;
         }
 
+        /**
+         * Sets the time-to-live (TTL) value for the message being built. This value determines
+         * how long the message will remain active before it expires.
+         *
+         * @param ttl the time-to-live value in seconds to be set for the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withTtl(int ttl) {
             this.template.ttl = ttl;
             return this;
