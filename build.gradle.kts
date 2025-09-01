@@ -11,7 +11,7 @@ plugins {
     signing
     jacoco
     idea
-    id("org.sonarqube") version "6.2.0.5505"
+    id("org.sonarqube") version "6.3.1.5724"
 }
 
 group = "de.kleinkop"
