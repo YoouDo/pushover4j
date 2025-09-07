@@ -44,8 +44,6 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jsr310)
 
-    implementation(libs.resilience4j.all)
-
     // testing
     testRuntimeOnly(libs.slf4j.simple)
     testImplementation(libs.jupiter.api)

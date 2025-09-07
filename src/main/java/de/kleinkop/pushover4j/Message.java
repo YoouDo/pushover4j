@@ -1,7 +1,6 @@
 package de.kleinkop.pushover4j;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,7 +13,7 @@ public class Message {
     private String url;
     private String urlTitle;
     private final Set<String> devices = new HashSet<>();
-    private LocalDateTime timestamp;
+    private OffsetDateTime timestamp;
     private boolean html = true;
     private String sound;
     private File image;
@@ -22,6 +21,7 @@ public class Message {
     private Integer retry;
     private Integer expire;
     private final Set<String> tags = new HashSet<>();
+    private Integer ttl;
 
     private Message(String msg) {
         this.message = msg;
@@ -66,7 +66,7 @@ public class Message {
         return devices;
     }
 
-    public LocalDateTime getTimestamp() {
+    public OffsetDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -98,6 +98,10 @@ public class Message {
         return Collections.unmodifiableSet(tags);
     }
 
+    public Integer getTtl() {
+        return ttl;
+    }
+
     public static Builder of(String msg) {
         return new Builder(msg);
     }
@@ -109,11 +113,23 @@ public class Message {
             this.template = new Message(msg);
         }
 
+        /**
+         * Sets the title for the message being built.
+         *
+         * @param title the title to be set for the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withTitle(String title) {
             this.template.title = title;
             return this;
         }
 
+        /**
+         * Sets the priority for the message being built.
+         *
+         * @param priority the priority level to be assigned to the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withPriority(Priority priority) {
             this.template.priority = priority;
             return this;
@@ -140,7 +156,7 @@ public class Message {
         }
 
         public Builder withTimestamp(OffsetDateTime dateTime) {
-            this.template.timestamp = Utils.toLocalDateTimeUTC(dateTime);
+            this.template.timestamp = dateTime;
             return this;
         }
 
@@ -164,13 +180,39 @@ public class Message {
             return this;
         }
 
+        /**
+         * Sets the retry interval for the emergency message being built.
+         * This value specifies the time in seconds between retry attempts.
+         *
+         * @param retry the retry interval in seconds
+         * @return the {@code Builder} instance to allow method chaining
+         */
         public Builder withRetry(int retry) {
             this.template.retry = retry;
             return this;
         }
 
+        /**
+         * Sets the expiration time for the emergency message being built.
+         * This value indicates the duration, in seconds, after which the message becomes invalid.
+         *
+         * @param expiration the expiration duration in seconds
+         * @return the {@code Builder} instance to enable method chaining
+         */
         public Builder withExpiration(int expiration) {
             this.template.expire = expiration;
+            return this;
+        }
+
+        /**
+         * Sets the time-to-live (TTL) value for the message being built. This value determines
+         * how long the message will remain active before it expires.
+         *
+         * @param ttl the time-to-live value in seconds to be set for the message
+         * @return the {@code Builder} instance to allow method chaining
+         */
+        public Builder withTtl(int ttl) {
+            this.template.ttl = ttl;
             return this;
         }
 
