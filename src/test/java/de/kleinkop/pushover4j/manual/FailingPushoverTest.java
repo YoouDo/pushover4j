@@ -10,10 +10,15 @@ public class FailingPushoverTest extends ManualPushoverTest {
     private static final Logger log = LoggerFactory.getLogger(FailingPushoverTest.class);
 
     void failingTest() {
-        var response = failingPushover().sendMessage(
-            Message.of("Bla").build()
-        );
-        log.info(response.toString());
+        try {
+            var response = failingPushover().sendMessage(
+                Message.of("Bla").build()
+            );
+            log.info(response.toString());
+        } catch (Exception e) {
+            log.error("Error", e);
+        }
+        log.info("Done");
     }
 
     public static void main(String[] args) {

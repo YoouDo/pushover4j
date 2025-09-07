@@ -52,10 +52,7 @@ public class HttpRetry {
         } else if (isFailure(resp)) {
             return CompletableFuture
                 .failedFuture(
-                    new RuntimeException(
-                        "Call to Pushover API failed: Code %d, Error: %s"
-                            .formatted(resp.statusCode(), resp.body())
-                    )
+                    new RetryException(resp.statusCode(), resp.body())
                 );
         } else {
             logger.debug("Successful retry: {}", resp.body());
