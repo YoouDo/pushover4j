@@ -4,7 +4,7 @@
 [versions]
 slf4j = "2.0.17"
 junit = "5.13.4"
-jackson = "2.19.2"
+jackson = "2.20.0"
 resilience4j = "2.3.0"
 wiremock = "3.0.1"
 hamcrest = "3.0"
