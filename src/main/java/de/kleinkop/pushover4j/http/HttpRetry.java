@@ -8,6 +8,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.concurrent.TimeUnit;
 
 public class HttpRetry {
     private static final Logger logger = LoggerFactory.getLogger(HttpRetry.class);
@@ -37,30 +38,40 @@ public class HttpRetry {
         HttpResponse<String> resp,
         Throwable t
     ) {
-        if (shouldRetry(resp, t, count)) {
-            logger.debug("About to call retry for {} times", count);
-            try {
-                Thread.sleep(retryInterval);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return CompletableFuture.failedFuture(e);
-            }
-
-            return client.sendAsync(request, handler)
-                .handleAsync((r, x) -> tryResend(client, request, handler, count + 1, r, x))
-                .thenCompose(Function.identity());
+        if (shouldRetry(resp, count)) {
+            logger.info("Retry attempt {}/{} in {} ms", count, maxRetries, retryInterval);
+            return CompletableFuture
+                .runAsync(() -> {}, CompletableFuture.delayedExecutor(retryInterval, TimeUnit.MILLISECONDS))
+                .thenCompose(v -> client.sendAsync(request, handler)
+                    .handle((r, x) -> tryResend(client, request, handler, count + 1, r, x))
+                    .thenCompose(Function.identity())
+                );
         } else if (t != null) {
             logger.debug("Returning error", t);
             return CompletableFuture.failedFuture(t);
-        } else if (resp.statusCode() / 100 != 2) {
-            return CompletableFuture.failedFuture(new RuntimeException("Call to Pushover API failed: " + resp.statusCode()));
+        } else if (isFailure(resp)) {
+            return CompletableFuture
+                .failedFuture(
+                    new RuntimeException(
+                        "Call to Pushover API failed: Code %d, Error: %s"
+                            .formatted(resp.statusCode(), resp.body())
+                    )
+                );
         } else {
             logger.debug("Successful retry: {}", resp.body());
             return CompletableFuture.completedFuture(resp);
         }
     }
 
-    public boolean shouldRetry(HttpResponse<?> r, Throwable t, int count) {
-        return (r == null || r.statusCode() != 200) && count < maxRetries;
+    public boolean shouldRetry(HttpResponse<?> r, int count) {
+        return isTransientFailure(r) && count <= maxRetries;
+    }
+
+    private boolean isTransientFailure(HttpResponse<?> r) {
+        return r == null || TransientHttpErrors.isTransient(r.statusCode());
+    }
+
+    private boolean isFailure(HttpResponse<?> r) {
+        return r == null || r.statusCode() / 100 != 2;
     }
 }

@@ -51,6 +51,7 @@ dependencies {
     testRuntimeOnly(libs.junit.platform)
 
     testImplementation(libs.wiremock.jre8)
+    testImplementation(libs.json.path)
     testImplementation(libs.hamcrest)
 }
 

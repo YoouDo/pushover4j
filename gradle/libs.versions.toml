@@ -5,9 +5,9 @@
 slf4j = "2.0.17"
 junit = "5.13.4"
 jackson = "2.20.0"
-resilience4j = "2.3.0"
 wiremock = "3.0.1"
 hamcrest = "3.0"
+json-path = "2.9.0"
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -20,9 +20,8 @@ junit-platform = { module = "org.junit.platform:junit-platform-launcher", versio
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
 
-resilience4j-all = { module = "io.github.resilience4j:resilience4j-all", version.ref = "resilience4j"}
-
 wiremock-jre8 = { module = "com.github.tomakehurst:wiremock-jre8", version.ref = "wiremock" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
 hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 
