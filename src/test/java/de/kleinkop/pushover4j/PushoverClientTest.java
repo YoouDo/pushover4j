@@ -222,7 +222,7 @@ public class PushoverClientTest {
         );
 
         final RuntimeException exception = assertThrows(RuntimeException.class, () -> pushoverClient.sendMessage(Message.of("Testing").build()));
-        assertTrue(exception.getMessage().startsWith("Call to Pushover API failed"));
+        assertTrue(exception.getMessage().startsWith("Sending message to Pushover failed"));
     }
 
     @Test
