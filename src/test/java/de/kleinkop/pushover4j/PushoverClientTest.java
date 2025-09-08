@@ -217,12 +217,12 @@ public class PushoverClientTest {
             post("/1/messages.json")
                 .inScenario("Retry2")
                 .willReturn(
-                    aResponse().withStatus(500)
+                    aResponse().withStatus(500).withBody("Unknown server error.")
                 )
         );
 
         final RuntimeException exception = assertThrows(RuntimeException.class, () -> pushoverClient.sendMessage(Message.of("Testing").build()));
-        assertTrue(exception.getMessage().startsWith("Call to Pushover API failed"));
+        assertTrue(exception.getMessage().startsWith("Sending message to Pushover failed"));
     }
 
     @Test
@@ -238,7 +238,7 @@ public class PushoverClientTest {
                 .willSetStateTo("STEP-1")
         );
 
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 4; i++) {
             stubFor(
                 post("/1/messages.json")
                     .inScenario("Retry")
@@ -253,7 +253,7 @@ public class PushoverClientTest {
         stubFor(
             post("/1/messages.json")
                 .inScenario("Retry")
-                .whenScenarioStateIs("STEP-4")
+                .whenScenarioStateIs("STEP-5")
                 .willReturn(
                     okJson(
                         """
@@ -275,14 +275,14 @@ public class PushoverClientTest {
             .filter(LoggedRequest::isMultipart)
             .toList();
 
-        assertEquals(5, loggedRequests.size());
-        var last = loggedRequests.get(4);
+        assertEquals(6, loggedRequests.size());
+        var last = loggedRequests.get(5);
 
         assertEquals("app-token", partAsString(last, "token"));
         assertEquals("user-token", partAsString(last, "user"));
         assertEquals("Testing", partAsString(last, "message"));
 
-        verify(5, postRequestedFor(urlPathEqualTo("/1/messages.json")));
+        verify(6, postRequestedFor(urlPathEqualTo("/1/messages.json")));
     }
 
     private void stubsForEmergencyMessage() {

@@ -17,7 +17,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
@@ -116,8 +115,6 @@ public class PushoverHttpClient implements PushoverClient {
             final HttpResponse<String> response = httpRequest(request);
             logger.info("Response: {}", response.body());
             return JsonMapper.fromJson(response.body(), RawPushoverResponse.class).toDomain(response.headers());
-        } catch (RuntimeException runtimeException) {
-            throw runtimeException;
         } catch (Exception e) {
             logger.warn("Error while sending request", e);
             throw new RuntimeException("Sending message to Pushover failed", e);
@@ -191,8 +188,8 @@ public class PushoverHttpClient implements PushoverClient {
         try {
             return httpRetry.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (CompletionException completionException) {
-            if (completionException.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) completionException.getCause();
+            if (completionException.getCause() instanceof RetryException re) {
+                throw new RuntimeException(re.getMessage(), re);
             }
             throw new RuntimeException("Call to Pushover API failed", completionException.getCause());
         } catch (Exception e) {

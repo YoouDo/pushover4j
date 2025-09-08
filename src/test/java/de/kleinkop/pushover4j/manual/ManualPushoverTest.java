@@ -6,7 +6,7 @@ import de.kleinkop.pushover4j.http.PushoverHttpClient;
 
 import java.io.File;
 
-public class ManualPushoverTest {
+abstract public class ManualPushoverTest {
     final private PushoverClient pushoverClient;
 
     final private PushoverClient failingPushoverClient;
