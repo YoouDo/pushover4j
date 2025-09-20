@@ -5,7 +5,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JsonMapper {
+    private static final Logger logger = LoggerFactory.getLogger(JsonMapper.class);
+
     private static final ObjectMapper mapper =
         new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -19,7 +24,8 @@ public class JsonMapper {
         try {
             return mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            return "";
+            logger.warn("Failed to serialize object to JSON", e);
+            return null;
         }
     }
 }

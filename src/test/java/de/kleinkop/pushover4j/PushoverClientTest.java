@@ -142,7 +142,7 @@ public class PushoverClientTest {
         assertNotNull(response.applicationUsage());
         assertEquals(10_000, response.applicationUsage().limit());
         assertEquals(1234, response.applicationUsage().remaining());
-        assertEquals(Utils.toLocalDateTimeUTC(1393653600L), response.applicationUsage().reset());
+        assertEquals(OffsetDateTime.parse("2014-03-01T06:00:00Z"), response.applicationUsage().reset());
 
         final List<LoggedRequest> loggedRequests = findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
             .stream()

@@ -1,5 +1,6 @@
 package de.kleinkop.pushover4j;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,10 @@ public class Utils {
 
     public static LocalDateTime toLocalDateTimeUTC(Long epochSecond) {
         return LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.UTC);
+    }
+
+    public static OffsetDateTime toOffsetDateTimeUTC(Long epochSecond) {
+        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSecond), ZoneOffset.UTC);
     }
 
     public static LocalDateTime toLocalDateTimeOrNull(Long epochSecond) {
