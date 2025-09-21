@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<verification-metadata xmlns="https://schema.gradle.org/dependency-verification" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://schema.gradle.org/dependency-verification https://schema.gradle.org/dependency-verification/dependency-verification-1.3.xsd">
+   <configuration>
+      <verify-metadata>false</verify-metadata>
+      <verify-signatures>true</verify-signatures>
+      <keyring-format>armored</keyring-format>
+      <key-servers enabled="false"/>
+      <trusted-keys>
+         <trusted-key id="0785B3EFF60B1B1BEA94E0BB7C25280EAE63EBE5" group="^org[.]apache[.]httpcomponents($|([.].*))" regex="true"/>
+         <trusted-key id="07E20F0103D9DFC697C490D0368557390486F2C5" group="org.awaitility"/>
+         <trusted-key id="10F3C7A02ECA55E502BADCF3991EFB94DB91127D" group="org.ow2" name="ow2" version="1.5.1"/>
+         <trusted-key id="19BEAB2D799C020F17C69126B16698A4ADF4D638" group="org.checkerframework" name="checker-qual" version="3.33.0"/>
+         <trusted-key id="1A2D608BF6D37AEF12D53A4F37B0A85F5CE89B0C" group="org.eclipse.jetty.toolchain" name="jetty-jakarta-servlet-api" version="5.0.2"/>
+         <trusted-key id="28118C070CB22A0175A2E8D43D12CA2AC19F3181" group="^com[.]fasterxml($|([.].*))" regex="true"/>
+         <trusted-key id="2B1042677FD8190C7B9FC0DC2161D72E7DCD4258" group="^org[.]sonarsource($|([.].*))" regex="true"/>
+         <trusted-key id="2DB4F1EF0FA761ECC4EA935C86FDC7E2A11262CB">
+            <trusting group="commons-codec"/>
+            <trusting group="commons-io"/>
+            <trusting group="org.apache.commons"/>
+         </trusted-key>
+         <trusted-key id="2E3A1AFFE42B5F53AF19F780BCF4173966770193" group="org.jetbrains" name="annotations" version="13.0"/>
+         <trusted-key id="2F39E2A1EB9BC4E78F403B22F6BC09712C8DF6EC" group="net.minidev"/>
+         <trusted-key id="2FC53E6B1F681184F4CCD637F5C81DE10A0B8ECC" group="org.yaml" name="snakeyaml" version="2.4"/>
+         <trusted-key id="3F999BB69041CF17E73BB1CEC038787776A19D18" group="net.javacrumbs.json-unit"/>
+         <trusted-key id="41D266DB4427983A1A4AFB0C3684155E9365C30E" group="com.jayway.jsonpath" name="json-path" version="2.9.0"/>
+         <trusted-key id="44FBDBBC1A00FE414F1C1873586654072EAD6677" group="org.sonatype.oss" name="oss-parent" version="9"/>
+         <trusted-key id="4BDE772C338BA540E1057D0C8EA48D105232855D" group="com.github.jknack"/>
+         <trusted-key id="517B94F8D0A46317A28D8AB30DA8A5EC02D11EAD" group="net.sf.jopt-simple" name="jopt-simple" version="5.0.4"/>
+         <trusted-key id="5989BAF76217B843D66BE55B2D0E1FB8FE4B68B4" group="^org[.]eclipse[.]jetty($|([.].*))" regex="true"/>
+         <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985" group="org.slf4j"/>
+         <trusted-key id="694621A7227D8D5289699830ABE9F3126BB741C1" group="com.google.guava"/>
+         <trusted-key id="6F538074CCEBF35F28AF9B066A0975F8B1127B83" group="org.jetbrains.kotlin"/>
+         <trusted-key id="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0" group="org.bouncycastle" name="bcprov-jdk18on" version="1.78.1"/>
+         <trusted-key id="84789D24DF77A32433CE1F079EB80E92EB2135B1" group="org.apache" name="apache"/>
+         <trusted-key id="A413F67D71BEEC23ADD0CE0ACB43338E060CF9FA" group="org.jacoco"/>
+         <trusted-key id="A5BD02B93E7A40482EB1D66A5F69AD087600B22C" group="org.ow2.asm"/>
+         <trusted-key id="A9C5DF4D22E99998D9875A5110C01C5A2F6059E7" group="commons-fileupload" name="commons-fileupload" version="1.5"/>
+         <trusted-key id="AEB1E1AEC035C66FA39589D13EFC46EE83C40224" group="com.networknt" name="json-schema-validator" version="1.0.86"/>
+         <trusted-key id="B286846C341BB72D1E5F85CAB460E7C4ED66826D" group="com.ethlo.time" name="itu" version="1.7.0"/>
+         <trusted-key id="BDB5FA4FE719D787FB3D3197F6D4A1D411E9D1AE" group="com.google.guava"/>
+         <trusted-key id="C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7" group="com.google.code.gson"/>
+         <trusted-key id="CE8075A251547BEE249BC151A2115AE15F6B8B72" group="org.xmlunit"/>
+         <trusted-key id="DBD744ACE7ADE6AA50DD591F66B50994442D2D40" group="^com[.]squareup($|([.].*))" regex="true"/>
+         <trusted-key id="E05F005AF50AE94E69701222B9729775C0352D3A" group="org.wiremock"/>
+         <trusted-key id="E3A9F95079E84CE201F7CF60BEDE11EAF1164480" group="org.hamcrest"/>
+         <trusted-key id="E5138A8E9F2E7E42D38B14D99AEE152CDCCEBFCB" group="io.github.hakky54"/>
+         <trusted-key id="EB1B3DE71713C9EC2E87CC26EE92349AD86DE446" group="com.google.j2objc" name="j2objc-annotations" version="2.8"/>
+         <trusted-key id="EE0CA873074092F806F59B65D364ABAA39A47320" group="com.google.errorprone"/>
+         <trusted-key id="F5FEBA84EB26C56457B2CF819E31AB27445478DB" group="org.infinispan"/>
+         <trusted-key id="FF6E2C001948C5F2F38B0CC385911F425EC61B51">
+            <trusting group="org.apiguardian"/>
+            <trusting group="org.opentest4j"/>
+            <trusting group="^org[.]junit($|([.].*))" regex="true"/>
+         </trusted-key>
+      </trusted-keys>
+   </configuration>
+   <components>
+      <component group="org.gradle.toolchains" name="foojay-resolver" version="1.0.0">
+         <artifact name="foojay-resolver-1.0.0.jar">
+            <pgp value="1BD97A6A154E7810EE0BC832E2F38302C8075E3D"/>
+            <sha256 value="78b86a47dfdf7697c9bd15da78983fd80da7247d6e02fc106bdf07e0388b60a8" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlin" name="kotlin-stdlib" version="1.9.22">
+         <artifact name="kotlin-stdlib-1.9.22.jar">
+            <sha256 value="6abe146c27864138b874ccccfe5f534e3eb923c99a1b7b5d45494ee5694f3e0a" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk7" version="1.9.10">
+         <artifact name="kotlin-stdlib-jdk7-1.9.10.jar">
+            <sha256 value="ac6361bf9ad1ed382c2103d9712c47cdec166232b4903ed596e8876b0681c9b7" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
+      </component>
+      <component group="org.jetbrains.kotlin" name="kotlin-stdlib-jdk8" version="1.9.10">
+         <artifact name="kotlin-stdlib-jdk8-1.9.10.jar">
+            <sha256 value="a4c74d94d64ce1abe53760fe0389dd941f6fc558d0dab35e47c085a11ec80f28" origin="Generated by Gradle" reason="A key couldn't be downloaded"/>
+         </artifact>
+      </component>
+   </components>
+</verification-metadata>
