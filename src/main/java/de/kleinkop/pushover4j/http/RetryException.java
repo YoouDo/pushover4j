@@ -1,26 +1,26 @@
 package de.kleinkop.pushover4j.http;
 
-public class RetryException extends Exception {
-    private final Integer code;
-    private final String serverMessage;
+public class RetryException extends RuntimeException {
+    private final int statusCode;
+    private final String responseBody;
 
-    public RetryException(Integer code, String cause) {
-        super();
-        this.serverMessage = cause;
-        this.code = code;
+    public RetryException(int statusCode, String responseBody) {
+        super("Call failed with status=%d body=%s".formatted(statusCode, responseBody));
+        this.statusCode = statusCode;
+        this.responseBody = responseBody;
     }
 
-    public Integer getCode() {
-        return code;
+    public RetryException(int statusCode, String responseBody, Throwable cause) {
+        super("Call failed with status=%d body=%s".formatted(statusCode, responseBody), cause);
+        this.statusCode = statusCode;
+        this.responseBody = responseBody;
     }
 
-    public String getServerMessage() {
-        return serverMessage;
+    public int getStatusCode() {
+        return statusCode;
     }
 
-    @Override
-    public String toString() {
-        return "Call to Pushover API failed: Code %d, Error: %s"
-            .formatted(code, serverMessage);
+    public String getResponseBody() {
+        return responseBody;
     }
 }
