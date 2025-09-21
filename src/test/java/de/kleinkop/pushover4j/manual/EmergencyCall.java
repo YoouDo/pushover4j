@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EmergencyCallTest extends ManualPushoverTest {
+public class EmergencyCall extends ManualPushoverCall {
 
     private void emergencyTest() {
         var response = pushover().sendMessage(
@@ -49,6 +49,6 @@ public class EmergencyCallTest extends ManualPushoverTest {
     }
 
     public static void main(String[] args) {
-        new EmergencyCallTest().emergencyTest();
+        new EmergencyCall().emergencyTest();
     }
 }

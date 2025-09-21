@@ -8,6 +8,7 @@ jackson = "2.20.0"
 wiremock = "3.0.1"
 hamcrest = "3.0"
 json-path = "2.9.0"
+awaitility = "4.3.0"
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -25,3 +26,4 @@ json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path
 
 hamcrest = { module = "org.hamcrest:hamcrest", version.ref = "hamcrest" }
 
+awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }

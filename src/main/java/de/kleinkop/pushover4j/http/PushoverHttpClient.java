@@ -3,6 +3,7 @@ package de.kleinkop.pushover4j.http;
 import de.kleinkop.pushover4j.JsonMapper;
 import de.kleinkop.pushover4j.Message;
 import de.kleinkop.pushover4j.PushoverClient;
+import de.kleinkop.pushover4j.PushoverException;
 import de.kleinkop.pushover4j.PushoverResponse;
 
 import de.kleinkop.pushover4j.ReceiptResponse;
@@ -117,7 +118,7 @@ public class PushoverHttpClient implements PushoverClient {
             return JsonMapper.fromJson(response.body(), RawPushoverResponse.class).toDomain(response.headers());
         } catch (Exception e) {
             logger.warn("Error while sending request", e);
-            throw new RuntimeException("Sending message to Pushover failed", e);
+            throw new PushoverException("Sending message to Pushover failed", e);
         }
     }
 
@@ -131,7 +132,7 @@ public class PushoverHttpClient implements PushoverClient {
             final HttpResponse<String> response = httpRequest(request);
             return JsonMapper.fromJson(response.body(), RawSoundResponse.class).toDomain();
         } catch (Exception e) {
-            throw new RuntimeException("Sounds request failed", e);
+            throw new PushoverException("Sounds request failed", e);
         }
     }
 
@@ -145,7 +146,7 @@ public class PushoverHttpClient implements PushoverClient {
             final HttpResponse<String> response = httpRequest(request);
             return JsonMapper.fromJson(response.body(), RawReceiptResponse.class).toDomain();
         } catch (Exception e) {
-            throw new RuntimeException("Emergency state request failed", e);
+            throw new PushoverException("Emergency state request failed", e);
         }
     }
 
@@ -161,7 +162,7 @@ public class PushoverHttpClient implements PushoverClient {
             HttpResponse<String> response = httpRequest(request);
             return JsonMapper.fromJson(response.body(), RawPushoverResponse.class).toDomain(response.headers());
         } catch (Exception e) {
-            throw new RuntimeException("Cancel emergency message request failed", e);
+            throw new PushoverException("Cancel emergency message request failed", e);
         }
     }
 
@@ -180,7 +181,7 @@ public class PushoverHttpClient implements PushoverClient {
             final HttpResponse<String> response = httpRequest(request);
             return JsonMapper.fromJson(response.body(), RawPushoverResponse.class).toDomain(response.headers());
         } catch (Exception e) {
-            throw new RuntimeException("Cancel emergency message by tag request failed", e);
+            throw new PushoverException("Cancel emergency message by tag request failed", e);
         }
     }
 
@@ -191,9 +192,9 @@ public class PushoverHttpClient implements PushoverClient {
             if (completionException.getCause() instanceof RetryException re) {
                 throw new RuntimeException(re.getMessage(), re);
             }
-            throw new RuntimeException("Call to Pushover API failed", completionException.getCause());
+            throw new PushoverException("Call to Pushover API failed", completionException.getCause());
         } catch (Exception e) {
-            throw new RuntimeException("Call to Pushover API failed", e);
+            throw new PushoverException("Call to Pushover API failed", e);
         }
     }
 

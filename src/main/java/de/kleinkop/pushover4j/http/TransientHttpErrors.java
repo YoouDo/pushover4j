@@ -5,6 +5,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TransientHttpErrors {
+
+    private TransientHttpErrors() {
+        // empty
+    }
+
     // List of HTTP response codes commonly considered transient
     public static final List<Integer> TRANSIENT_STATUS_CODES = List.of(
         408, // Request Timeout

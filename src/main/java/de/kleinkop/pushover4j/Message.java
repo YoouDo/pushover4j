@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Message {
+    @SuppressWarnings("java:S1700")
     private final String message;
     private String title;
     private Priority priority = Priority.NORMAL;

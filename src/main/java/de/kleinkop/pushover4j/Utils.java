@@ -8,6 +8,10 @@ import java.time.ZoneOffset;
 
 public class Utils {
 
+    private Utils() {
+        // empty
+    }
+
     public static String nullable(String text) {
         if ("".equals(text)) {
             return null;
