@@ -6,7 +6,10 @@ import de.kleinkop.pushover4j.http.PushoverHttpClient;
 
 import java.io.File;
 
-abstract public class ManualPushoverTest {
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
+abstract public class ManualPushoverCall {
     final private PushoverClient pushoverClient;
 
     final private PushoverClient failingPushoverClient;
@@ -14,7 +17,7 @@ abstract public class ManualPushoverTest {
     protected String device = System.getenv("PUSHOVER_DEVICE");
     protected String sound = System.getenv("PUSHOVER_SOUND");
 
-    public ManualPushoverTest() {
+    public ManualPushoverCall() {
         pushoverClient = new PushoverHttpClient(
             System.getenv("PUSHOVER_TOKEN"),
             System.getenv("PUSHOVER_USER")
@@ -38,10 +41,6 @@ abstract public class ManualPushoverTest {
     }
 
     protected void waiting(Long timeInSeconds) {
-        try {
-            Thread.sleep(timeInSeconds * 1000L);
-        } catch (InterruptedException e) {
-            // ignore
-        }
+        await("waiting-on-pushover").pollDelay(timeInSeconds, SECONDS).until(() -> true);
     }
 }

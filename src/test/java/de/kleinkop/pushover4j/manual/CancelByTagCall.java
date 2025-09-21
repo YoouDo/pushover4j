@@ -11,9 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CancelByTagTest extends ManualPushoverTest {
+public class CancelByTagCall extends ManualPushoverCall {
 
-    private static final Logger log = LoggerFactory.getLogger(CancelByTagTest.class);
+    private static final Logger log = LoggerFactory.getLogger(CancelByTagCall.class);
 
     void cancelTest() {
         final String tag = "aTag";
@@ -56,6 +56,6 @@ public class CancelByTagTest extends ManualPushoverTest {
     }
 
     public static void main(String[] args) {
-        new CancelByTagTest().cancelTest();
+        new CancelByTagCall().cancelTest();
     }
 }

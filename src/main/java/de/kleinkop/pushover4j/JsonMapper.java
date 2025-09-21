@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 public class JsonMapper {
     private static final Logger logger = LoggerFactory.getLogger(JsonMapper.class);
 
+    private JsonMapper() {
+        // empty
+    }
+
     private static final ObjectMapper mapper =
         new ObjectMapper()
             .registerModule(new JavaTimeModule())

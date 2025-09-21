@@ -5,9 +5,9 @@ import de.kleinkop.pushover4j.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FailingPushoverTest extends ManualPushoverTest {
+public class FailingPushoverCall extends ManualPushoverCall {
 
-    private static final Logger log = LoggerFactory.getLogger(FailingPushoverTest.class);
+    private static final Logger log = LoggerFactory.getLogger(FailingPushoverCall.class);
 
     void failingTest() {
         try {
@@ -22,6 +22,6 @@ public class FailingPushoverTest extends ManualPushoverTest {
     }
 
     public static void main(String[] args) {
-        new FailingPushoverTest().failingTest();
+        new FailingPushoverCall().failingTest();
     }
 }

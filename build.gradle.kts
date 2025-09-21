@@ -45,14 +45,15 @@ dependencies {
     implementation(libs.jackson.jsr310)
 
     // testing
-    testRuntimeOnly(libs.slf4j.simple)
     testImplementation(libs.jupiter.api)
-    testRuntimeOnly(libs.jupiter.engine)
-    testRuntimeOnly(libs.junit.platform)
-
     testImplementation(libs.wiremock.jre8)
     testImplementation(libs.json.path)
     testImplementation(libs.hamcrest)
+    testImplementation(libs.awaitility)
+
+    testRuntimeOnly(libs.slf4j.simple)
+    testRuntimeOnly(libs.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform)
 }
 
 testing {

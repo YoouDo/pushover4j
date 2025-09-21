@@ -114,6 +114,7 @@ public class PushoverClientTest {
         );
     }
 
+    @SuppressWarnings("UastIncorrectHttpHeaderInspection")
     @Test
     void testSimpleMessage() {
         stubFor(
@@ -221,7 +222,7 @@ public class PushoverClientTest {
                 )
         );
 
-        final RuntimeException exception = assertThrows(RuntimeException.class, () -> pushoverClient.sendMessage(Message.of("Testing").build()));
+        final RuntimeException exception = assertThrows(PushoverException.class, () -> pushoverClient.sendMessage(Message.of("Testing").build()));
         assertTrue(exception.getMessage().startsWith("Sending message to Pushover failed"));
     }
 
@@ -359,6 +360,4 @@ public class PushoverClientTest {
         final Optional<Request.Part> first = request.getParts().stream().filter(r -> r.getName().equals(name)).findFirst();
         return first.isPresent() ? first.get().getBody().asString() : "";
     }
-
-
 }
