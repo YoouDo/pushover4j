@@ -3,7 +3,7 @@
 
 [versions]
 slf4j = "2.0.17"
-junit = "5.13.4"
+junit = "6.0.0"
 jackson = "2.20.0"
 wiremock = "3.0.1"
 hamcrest = "3.0"
@@ -19,7 +19,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j"}
 
 jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.4" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.0" }
 
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
