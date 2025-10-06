@@ -11,7 +11,7 @@ plugins {
     signing
     jacoco
     idea
-    id("org.sonarqube") version "6.3.1.5724"
+    alias(libs.plugins.sonarqube)
 }
 
 group = "de.kleinkop"
@@ -26,6 +26,7 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    withJavadocJar()
     withSourcesJar()
 }
 
@@ -64,6 +65,15 @@ testing {
             useJUnitJupiter(libs.versions.junit)
         }
     }
+}
+
+signing {
+    val key = System.getenv("SIGNING_KEY") ?: return@signing
+    val password = System.getenv("SIGNING_PASSWORD") ?: return@signing
+    val publishing: PublishingExtension by project
+
+    useInMemoryPgpKeys(key, password)
+    sign(publishing.publications["mavenJava"])
 }
 
 tasks.jacocoTestReport {

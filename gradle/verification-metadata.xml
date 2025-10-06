@@ -5,6 +5,11 @@
       <verify-signatures>true</verify-signatures>
       <keyring-format>armored</keyring-format>
       <key-servers enabled="false"/>
+       <trusted-artifacts>
+           <trust file=".*-javadoc[.]jar" regex="true"/>
+           <trust file=".*-sources[.]jar" regex="true"/>
+           <trust file=".*-src[.]zip" regex="true"/>
+       </trusted-artifacts>
       <trusted-keys>
          <trusted-key id="0785B3EFF60B1B1BEA94E0BB7C25280EAE63EBE5" group="^org[.]apache[.]httpcomponents($|([.].*))" regex="true"/>
          <trusted-key id="07E20F0103D9DFC697C490D0368557390486F2C5" group="org.awaitility"/>
