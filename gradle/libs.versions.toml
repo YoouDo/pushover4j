@@ -3,15 +3,15 @@
 
 [versions]
 slf4j = "2.0.17"
-junit = "5.13.4"
-jackson = "2.20.0"
+junit = "6.0.1"
+jackson = "2.20.1"
 wiremock = "3.0.1"
 hamcrest = "3.0"
-json-path = "2.9.0"
+json-path = "2.10.0"
 awaitility = "4.3.0"
 
 [plugins]
-sonarqube = { id = "org.sonarqube", version = "6.3.1.5724" }
+sonarqube = { id = "org.sonarqube", version = "7.0.1.6134" }
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -19,7 +19,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j"}
 
 jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.4" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.1" }
 
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
