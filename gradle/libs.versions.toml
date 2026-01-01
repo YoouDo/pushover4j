@@ -11,7 +11,7 @@ json-path = "2.10.0"
 awaitility = "4.3.0"
 
 [plugins]
-sonarqube = { id = "org.sonarqube", version = "7.1.0.6387" }
+sonarqube = { id = "org.sonarqube", version = "7.2.2.6593" }
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
