@@ -46,6 +46,7 @@
          <trusted-key id="BDB5FA4FE719D787FB3D3197F6D4A1D411E9D1AE" group="com.google.guava"/>
          <trusted-key id="C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7" group="com.google.code.gson"/>
          <trusted-key id="CE8075A251547BEE249BC151A2115AE15F6B8B72" group="org.xmlunit"/>
+         <trusted-key id="D1436C0DBACEA48702AF97C363F1DD7753B8B315" group="^org[.]sonarsource[.]scanner($|([.].*))" regex="true"/>
          <trusted-key id="DBD744ACE7ADE6AA50DD591F66B50994442D2D40" group="^com[.]squareup($|([.].*))" regex="true"/>
          <trusted-key id="E05F005AF50AE94E69701222B9729775C0352D3A" group="org.wiremock"/>
          <trusted-key id="E3A9F95079E84CE201F7CF60BEDE11EAF1164480" group="org.hamcrest"/>
@@ -64,6 +65,11 @@
       <component group="com.jayway.jsonpath" name="json-path" version="2.10.0">
          <artifact name="json-path-2.10.0.jar">
             <pgp value="41D266DB4427983A1A4AFB0C3684155E9365C30E"/>
+         </artifact>
+      </component>
+      <component group="org.bouncycastle" name="bcprov-jdk18on" version="1.83">
+         <artifact name="bcprov-jdk18on-1.83.jar">
+            <pgp value="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0"/>
          </artifact>
       </component>
       <component group="org.gradle.toolchains" name="foojay-resolver" version="1.0.0">
