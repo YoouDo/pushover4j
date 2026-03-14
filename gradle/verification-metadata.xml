@@ -67,6 +67,11 @@
             <pgp value="41D266DB4427983A1A4AFB0C3684155E9365C30E"/>
          </artifact>
       </component>
+      <component group="com.jayway.jsonpath" name="json-path" version="3.0.0">
+         <artifact name="json-path-3.0.0.jar">
+            <pgp value="41D266DB4427983A1A4AFB0C3684155E9365C30E"/>
+         </artifact>
+      </component>
       <component group="org.bouncycastle" name="bcprov-jdk18on" version="1.83">
          <artifact name="bcprov-jdk18on-1.83.jar">
             <pgp value="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0"/>
@@ -96,6 +101,11 @@
       <component group="org.jspecify" name="jspecify" version="1.0.0">
          <artifact name="jspecify-1.0.0.jar">
             <pgp value="41CD49B4EF5876F9E9F691DABAC30622339994C4"/>
+         </artifact>
+      </component>
+      <component group="org.yaml" name="snakeyaml" version="2.5">
+         <artifact name="snakeyaml-2.5.jar">
+            <pgp value="2FC53E6B1F681184F4CCD637F5C81DE10A0B8ECC"/>
          </artifact>
       </component>
    </components>

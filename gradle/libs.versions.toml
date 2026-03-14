@@ -3,11 +3,11 @@
 
 [versions]
 slf4j = "2.0.17"
-junit = "6.0.2"
-jackson = "2.21.0"
+junit = "6.0.3"
+jackson = "2.21.1"
 wiremock = "3.0.1"
 hamcrest = "3.0"
-json-path = "2.10.0"
+json-path = "3.0.0"
 awaitility = "4.3.0"
 
 [plugins]
@@ -19,7 +19,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j"}
 
 jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.2" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
 
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson"}
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson"}
