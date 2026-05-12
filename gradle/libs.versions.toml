@@ -4,14 +4,14 @@
 [versions]
 slf4j = "2.0.17"
 junit = "6.0.3"
-jackson = "2.21.2"
+jackson = "2.21.3"
 wiremock = "3.0.1"
 hamcrest = "3.0"
 json-path = "3.0.0"
 awaitility = "4.3.0"
 
 [plugins]
-sonarqube = { id = "org.sonarqube", version = "7.2.3.7755" }
+sonarqube = { id = "org.sonarqube", version = "7.3.0.8198" }
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
