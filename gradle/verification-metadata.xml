@@ -72,8 +72,18 @@
             <pgp value="41D266DB4427983A1A4AFB0C3684155E9365C30E"/>
          </artifact>
       </component>
+      <component group="de.siegmar" name="fastcsv" version="3.7.0">
+         <artifact name="fastcsv-3.7.0.jar">
+            <pgp value="206DF7C48E3D6CB145DDA835FF844A3256C7FB01"/>
+         </artifact>
+      </component>
       <component group="org.bouncycastle" name="bcprov-jdk18on" version="1.83">
          <artifact name="bcprov-jdk18on-1.83.jar">
+            <pgp value="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0"/>
+         </artifact>
+      </component>
+      <component group="org.bouncycastle" name="bcprov-jdk18on" version="1.84">
+         <artifact name="bcprov-jdk18on-1.84.jar">
             <pgp value="7B121B76A7ED6CE6E60AD51784E913A8E3A748C0"/>
          </artifact>
       </component>
