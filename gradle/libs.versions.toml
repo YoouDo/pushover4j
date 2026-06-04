@@ -4,7 +4,7 @@
 [versions]
 slf4j = "2.0.18"
 junit = "6.1.0"
-jackson = "2.22.0"
+jackson = "2.21.4"
 wiremock = "3.0.1"
 hamcrest = "3.0"
 json-path = "3.0.0"
