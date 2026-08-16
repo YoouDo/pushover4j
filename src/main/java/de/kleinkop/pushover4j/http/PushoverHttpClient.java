@@ -12,14 +12,27 @@ import de.kleinkop.pushover4j.SoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.zip.GZIPOutputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class PushoverHttpClient implements PushoverClient {
     private static final Logger logger = LoggerFactory.getLogger(PushoverHttpClient.class);
@@ -27,6 +40,11 @@ public class PushoverHttpClient implements PushoverClient {
     private static final Long HTTP_TIMEOUT_IN_SECONDS = 30L;
     private static final int RETRY_ATTEMPTS = 5;
     private static final long DEFAULT_RETRY_INTERVAL = 5000L;
+    private static final int ENCRYPTION_KEY_LENGTH_BYTES = 32;
+    private static final String ENCRYPTION_KEY_PATTERN = "[0-9a-fA-F]{64}";
+    private static final String INVALID_ENCRYPTION_KEY_MESSAGE = "An encryption key is required and must be a 64-character hexadecimal value";
+    private static final int IV_LENGTH_BYTES = 16;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final static String API_MESSAGE_PATH = "/1/messages.json";
     private final static String API_SOUNDS_PATH = "/1/sounds.json";
@@ -81,15 +99,78 @@ public class PushoverHttpClient implements PushoverClient {
 
     @Override
     public PushoverResponse sendMessage(Message msg) {
+        return sendMessageToServer(msg, Optional.empty());
+    }
+
+    @Override
+    public PushoverResponse sendEncryptedMessage(Message msg, String encryptionKey) {
+        validateEncryptionKey(encryptionKey);
+        return sendMessageToServer(msg, Optional.of(encryptionKey));
+    }
+
+    private String encrypt(String value, String encryptionKey) throws GeneralSecurityException, IOException {
+        final byte[] key = decodeEncryptionKey(encryptionKey);
+        final byte[] iv = new byte[IV_LENGTH_BYTES];
+        SECURE_RANDOM.nextBytes(iv);
+
+        final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+        final byte[] ciphertext = cipher.doFinal(gzip(value));
+
+        final Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(key, "HmacSHA256"));
+        mac.update(iv);
+        mac.update(ciphertext);
+        final byte[] hmac = mac.doFinal();
+
+        final byte[] payload = new byte[iv.length + ciphertext.length + hmac.length];
+        System.arraycopy(iv, 0, payload, 0, iv.length);
+        System.arraycopy(ciphertext, 0, payload, iv.length, ciphertext.length);
+        System.arraycopy(hmac, 0, payload, iv.length + ciphertext.length, hmac.length);
+        return Base64.getEncoder().encodeToString(payload);
+    }
+
+    private byte[] decodeEncryptionKey(String encryptionKey) {
+        validateEncryptionKey(encryptionKey);
+
+        final byte[] key = new byte[ENCRYPTION_KEY_LENGTH_BYTES];
+        for (int i = 0; i < key.length; i++) {
+            key[i] = (byte) Integer.parseInt(encryptionKey.substring(i * 2, i * 2 + 2), 16);
+        }
+        return key;
+    }
+
+    private void validateEncryptionKey(String encryptionKey) {
+        if (encryptionKey == null || !encryptionKey.matches(ENCRYPTION_KEY_PATTERN)) {
+            throw new PushoverException(INVALID_ENCRYPTION_KEY_MESSAGE);
+        }
+    }
+
+    private byte[] gzip(String value) throws IOException {
+        final ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
+            gzip.write(value.getBytes(StandardCharsets.UTF_8));
+        }
+        return output.toByteArray();
+    }
+
+    private String maybeEncryptedValue(String value, Optional<String> encryptionKey) throws GeneralSecurityException, IOException {
+        if (value == null || encryptionKey.isEmpty()) {
+            return value;
+        }
+        return encrypt(value, encryptionKey.get());
+    }
+
+    private PushoverResponse sendMessageToServer(Message msg, Optional<String> encryptionKey) {
         try {
             final MultipartFormData bodyData = new HttpClientMultipartFormBody()
                 .plus("token", this.appToken)
                 .plus("user", this.userToken)
-                .plus("message", msg.getMessage())
+                .plus("message", maybeEncryptedValue(msg.getMessage(), encryptionKey))
                 .plusIfSet("priority", msg.getPriority().getValue())
-                .plusIfSet("title", msg.getTitle())
-                .plusIfSet("url", msg.getUrl())
-                .plusIfSet("url_title", msg.getUrlTitle())
+                .plusIfSet("title", maybeEncryptedValue(msg.getTitle(), encryptionKey))
+                .plusIfSet("url", maybeEncryptedValue(msg.getUrl(), encryptionKey))
+                .plusIfSet("url_title", maybeEncryptedValue(msg.getUrlTitle(), encryptionKey))
                 .plusIfSet("html", msg.isHtml(), "1")
                 .plusIfSet("monospace", msg.isMonospace(), "1")
                 .plusIfSet("sound", msg.getSound())
@@ -104,6 +185,7 @@ public class PushoverHttpClient implements PushoverClient {
                 .plusIfSet("tags", msg.getTags())
                 .plusImageIfSet("attachment", msg.getImage())
                 .plusIfSet("ttl", msg.getTtl())
+                .plusIfSet("encrypted", encryptionKey.isPresent(), () -> "1")
                 .build(UUID.randomUUID().toString());
 
             final HttpRequest request = defaultRequest(apiHost + API_MESSAGE_PATH)

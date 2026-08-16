@@ -36,6 +36,18 @@ var response = pushoverClient.sendMessage(
 );
 ```
 
+Send an end-to-end encrypted message using Pushover's 64-character hexadecimal encryption key. The
+message, title, URL, and URL title are encrypted independently before they are submitted:
+
+```java
+var response = pushoverClient.sendEncryptedMessage(
+    Message.of("This is an encrypted message")
+        .withTitle("Confidential")
+        .build(),
+    "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+);
+```
+
 Send a message using all available options excluding those for emergency messages:
 
 ```java
