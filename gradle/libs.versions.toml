@@ -2,16 +2,16 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-slf4j = "2.0.18"
+slf4j = "2.0.20"
 junit = "6.1.3"
-jackson = "2.22.2"
+jackson = "2.22.3"
 wiremock = "3.0.1"
 hamcrest = "3.0"
 json-path = "3.0.0"
 awaitility = "4.3.0"
 
 [plugins]
-sonarqube = { id = "org.sonarqube", version = "7.4.0.8496" }
+sonarqube = { id = "org.sonarqube", version = "7.5.0.8588" }
 
 [libraries]
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
