@@ -57,12 +57,49 @@ dependencies {
     testRuntimeOnly(libs.junit.platform)
 }
 
-testing {
-    suites {
-        // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
-            useJUnitJupiter(libs.versions.junit)
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["java"])
+
+            pom {
+                name.set("pushover client")
+                description.set("A Java client for Pushover messaging")
+                url.set("https://github.com/YoouDo/Pushover4j")
+                licenses {
+                    license {
+                        name.set("The Apache Software License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("YoouDo")
+                        name.set("Udo Kleinkop")
+                        email.set("udo@kleinkop.de")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
+                    developerConnection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
+                    url.set("git@github.com:YoouDo/Pushover4j.git")
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("OSSRH_USER") ?: return@credentials
+                password = System.getenv("OSSRH_PASSWORD") ?: return@credentials
+            }
         }
     }
 }
