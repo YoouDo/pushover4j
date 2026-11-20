@@ -1,4 +1,4 @@
-# Pushover4k
+# Pushover4j
 
 ![master](https://github.com/YoouDo/pushover4j/actions/workflows/master.yaml/badge.svg)
 
@@ -33,6 +33,18 @@ Send a simple message with default values:
 ```java
 var response = pushoverClient.sendMessage(
     Message.of("This is a test message").build()
+);
+```
+
+Send an end-to-end encrypted message using Pushover's 64-character hexadecimal encryption key. The
+message, title, URL, and URL title are encrypted independently before they are submitted:
+
+```java
+var response = pushoverClient.sendEncryptedMessage(
+    Message.of("This is an encrypted message")
+        .withTitle("Confidential")
+        .build(),
+    "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 );
 ```
 

@@ -14,11 +14,24 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
@@ -32,6 +45,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -154,6 +168,88 @@ public class PushoverClientTest {
         assertEquals("app-token", partAsString(loggedRequests.get(0), "token"));
         assertEquals("user-token", partAsString(loggedRequests.get(0), "user"));
         assertEquals("Testing", partAsString(loggedRequests.get(0), "message"));
+    }
+
+    @Test
+    void testEncryptedMessage() throws GeneralSecurityException, IOException {
+        stubFor(post("/1/messages.json").willReturn(okJson("""
+            {
+                "status": 1,
+                "request": "encrypted"
+            }
+            """)));
+
+        final String encryptionKey = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        final PushoverResponse response = pushoverClient.sendEncryptedMessage(
+            Message.of("Secret message")
+                .withTitle("Secret title")
+                .withUrl("https://example.test/secret")
+                .withUrlTitle("Secret link")
+                .withPriority(Priority.HIGH)
+                .build(),
+            encryptionKey
+        );
+
+        assertEquals(1, response.status());
+        final List<LoggedRequest> loggedRequests = findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .stream()
+            .filter(LoggedRequest::isMultipart)
+            .toList();
+        final LoggedRequest request = loggedRequests.get(loggedRequests.size() - 1);
+
+        assertEquals("app-token", partAsString(request, "token"));
+        assertEquals("user-token", partAsString(request, "user"));
+        assertEquals("1", partAsString(request, "encrypted"));
+        assertEquals("1", partAsString(request, "priority"));
+        assertEncryptedValue(request, "message", "Secret message", encryptionKey);
+        assertEncryptedValue(request, "title", "Secret title", encryptionKey);
+        assertEncryptedValue(request, "url", "https://example.test/secret", encryptionKey);
+        assertEncryptedValue(request, "url_title", "Secret link", encryptionKey);
+        assertNotEquals(partAsString(request, "message"), partAsString(request, "title"));
+    }
+
+    @Test
+    void testEncryptedMessageOmitsNullOptionalFields() {
+        stubFor(post("/1/messages.json").willReturn(okJson("""
+            {
+                "status": 1,
+                "request": "encrypted-minimal"
+            }
+            """)));
+
+        final String encryptionKey = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+        pushoverClient.sendEncryptedMessage(Message.of("Secret message").build(), encryptionKey);
+
+        final List<LoggedRequest> loggedRequests = findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .stream()
+            .filter(LoggedRequest::isMultipart)
+            .toList();
+        final LoggedRequest request = loggedRequests.get(loggedRequests.size() - 1);
+        assertFalse(hasPart(request, "title"));
+        assertFalse(hasPart(request, "url"));
+        assertFalse(hasPart(request, "url_title"));
+    }
+
+    @Test
+    void testEncryptedMessageRejectsMissingOrMalformedKeys() {
+        final PushoverException missingKeyException = assertThrows(
+            PushoverException.class,
+            () -> pushoverClient.sendEncryptedMessage(Message.of("Secret message").build(), null)
+        );
+        assertEquals(
+            "An encryption key is required and must be a 64-character hexadecimal value",
+            missingKeyException.getMessage()
+        );
+
+        final PushoverException malformedKeyException = assertThrows(
+            PushoverException.class,
+            () -> pushoverClient.sendEncryptedMessage(Message.of("Secret message").build(), "not-a-valid-key")
+        );
+        assertEquals(
+            "An encryption key is required and must be a 64-character hexadecimal value",
+            malformedKeyException.getMessage()
+        );
+        verify(0, postRequestedFor(urlPathEqualTo("/1/messages.json")));
     }
 
     @Test
@@ -359,5 +455,44 @@ public class PushoverClientTest {
     private String partAsString(LoggedRequest request, String name) {
         final Optional<Request.Part> first = request.getParts().stream().filter(r -> r.getName().equals(name)).findFirst();
         return first.isPresent() ? first.get().getBody().asString() : "";
+    }
+
+    private boolean hasPart(LoggedRequest request, String name) {
+        return request.getParts().stream().anyMatch(part -> part.getName().equals(name));
+    }
+
+    private void assertEncryptedValue(LoggedRequest request, String name, String expected, String encryptionKey)
+        throws GeneralSecurityException, IOException {
+        final String encryptedValue = partAsString(request, name);
+        assertNotEquals(expected, encryptedValue);
+        assertEquals(expected, decrypt(encryptedValue, encryptionKey));
+    }
+
+    private String decrypt(String encryptedValue, String encryptionKey) throws GeneralSecurityException, IOException {
+        final byte[] key = hexDecode(encryptionKey);
+        final byte[] payload = Base64.getDecoder().decode(encryptedValue);
+        final byte[] iv = Arrays.copyOfRange(payload, 0, 16);
+        final byte[] ciphertext = Arrays.copyOfRange(payload, 16, payload.length - 32);
+        final byte[] hmac = Arrays.copyOfRange(payload, payload.length - 32, payload.length);
+
+        final Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(new SecretKeySpec(key, "HmacSHA256"));
+        mac.update(iv);
+        mac.update(ciphertext);
+        assertTrue(MessageDigest.isEqual(hmac, mac.doFinal()));
+
+        final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
+        try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(cipher.doFinal(ciphertext)))) {
+            return new String(gzip.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private byte[] hexDecode(String value) {
+        final byte[] result = new byte[value.length() / 2];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = (byte) Integer.parseInt(value.substring(i * 2, i * 2 + 2), 16);
+        }
+        return result;
     }
 }

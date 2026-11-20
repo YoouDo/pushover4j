@@ -5,7 +5,6 @@ buildscript {
 }
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
     `java-library`
     `maven-publish`
     signing
@@ -24,7 +23,7 @@ repositories {
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
     withJavadocJar()
     withSourcesJar()
@@ -47,7 +46,7 @@ dependencies {
 
     // testing
     testImplementation(libs.jupiter.api)
-    testImplementation(libs.wiremock.jre8)
+    testImplementation(libs.wiremock)
     testImplementation(libs.json.path)
     testImplementation(libs.hamcrest)
     testImplementation(libs.awaitility)
