@@ -1,4 +1,4 @@
-# Pushover4k
+# Pushover4j
 
 ![master](https://github.com/YoouDo/pushover4j/actions/workflows/master.yaml/badge.svg)
 

@@ -5,7 +5,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.IntegerRange;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ public class EncryptedPushoverCall extends ManualPushoverCall {
                     .withImage(file)
                     .withUrl("https://www.example.com")
                     .withUrlTitle("This is an example URL.")
-                    .withTtl(30)
+                    .withTtl(300)
                     .withSound(sound).build(),
                 key
             );

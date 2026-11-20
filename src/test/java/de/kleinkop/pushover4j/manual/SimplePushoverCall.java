@@ -24,6 +24,7 @@ public class SimplePushoverCall extends ManualPushoverCall {
             .sounds()
             .keySet();
 
+        log.info("Available sounds: {}", sounds);
         assertThat(sounds, Matchers.hasItem(sound));
 
         var file = file("/testdata/image.png");
