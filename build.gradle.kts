@@ -70,7 +70,7 @@ mavenPublishing {
 
     configure(
         JavaLibrary(
-            javadocJar = JavadocJar.Javadoc(),
+            javadocJar = JavadocJar.None(),
             sourcesJar = SourcesJar.Sources(),
         )
     )
