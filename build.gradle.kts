@@ -1,3 +1,7 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
+
 buildscript {
     repositories {
         mavenCentral()
@@ -10,6 +14,7 @@ plugins {
     signing
     jacoco
     idea
+    id("com.vanniktech.maven.publish") version "0.37.0"
     alias(libs.plugins.sonarqube)
 }
 
@@ -60,56 +65,44 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-publishing {
-    publications {
-        register("mavenJava", MavenPublication::class) {
-            from(components["java"])
+mavenPublishing {
+    coordinates(project.group.toString(), "pushover4j", project.version.toString())
 
-            pom {
-                name.set("pushover client")
-                description.set("A Java client for Pushover messaging")
-                url.set("https://github.com/YoouDo/Pushover4j")
-                licenses {
-                    license {
-                        name.set("The Apache Software License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("YoouDo")
-                        name.set("Udo Kleinkop")
-                        email.set("udo@kleinkop.de")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
-                    developerConnection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
-                    url.set("git@github.com:YoouDo/Pushover4j.git")
-                }
+    configure(
+        JavaLibrary(
+            javadocJar = JavadocJar.Javadoc(),
+            sourcesJar = SourcesJar.Sources(),
+        )
+    )
+
+    pom {
+        name.set("pushover client")
+        description.set("A Java client for Pushover messaging")
+        inceptionYear.set("2026")
+        url.set("https://github.com/YoouDo/Pushover4j")
+        licenses {
+            license {
+                name.set("The Apache Software License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
             }
+        }
+        developers {
+            developer {
+                id.set("YoouDo")
+                name.set("Udo Kleinkop")
+                email.set("udo@kleinkop.de")
+                url.set("https://github.com/YoouDo")
+            }
+        }
+        scm {
+            connection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
+            developerConnection.set("scm:git:git@github.com:YoouDo/Pushover4j.git")
+            url.set("https://github.com/YoouDo/Pushover4j")
         }
     }
 
-    repositories {
-        maven {
-            name = "OSSRH"
-            setUrl("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("OSSRH_USER") ?: return@credentials
-                password = System.getenv("OSSRH_PASSWORD") ?: return@credentials
-            }
-        }
-    }
-}
-
-signing {
-    val key = System.getenv("SIGNING_KEY") ?: return@signing
-    val password = System.getenv("SIGNING_PASSWORD") ?: return@signing
-    val publishing: PublishingExtension by project
-
-    useInMemoryPgpKeys(key, password)
-    sign(publishing.publications["mavenJava"])
+    publishToMavenCentral()
+    signAllPublications()
 }
 
 tasks.jacocoTestReport {
