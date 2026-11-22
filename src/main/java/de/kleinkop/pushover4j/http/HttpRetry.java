@@ -10,6 +10,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
@@ -42,7 +43,8 @@ public class HttpRetry {
         HttpResponse<String> resp,
         Throwable t
     ) {
-        if (shouldRetry(resp, t, count)) {
+        final Throwable cause = t instanceof CompletionException ? t.getCause() : t;
+        if (shouldRetry(resp, cause, count)) {
             logger.info("Retry attempt {}/{} in {} ms", count, maxRetries, retryInterval);
             return CompletableFuture
                 .runAsync(() -> {}, CompletableFuture.delayedExecutor(retryInterval, TimeUnit.MILLISECONDS))
@@ -50,10 +52,10 @@ public class HttpRetry {
                     .handle((r, x) -> tryResend(client, request, handler, count + 1, r, x))
                     .thenCompose(Function.identity())
                 );
-        } else if (t != null) {
-            logger.debug("Returning error (no more retries)", t);
+        } else if (cause != null) {
+            logger.debug("Returning error (no more retries)", cause);
             return CompletableFuture.failedFuture(
-                new RetryException(-1, null, t)
+                new RetryException(-1, null, cause)
             );
         } else if (isFailure(resp)) {
             final int status = resp != null ? resp.statusCode() : -1;

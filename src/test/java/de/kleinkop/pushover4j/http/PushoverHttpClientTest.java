@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class PushoverHttpClientTest {
     @Test
@@ -30,15 +31,14 @@ public class PushoverHttpClientTest {
                 "user": "%s",
                 "errors": ["%s"],
                 "receipt": "%s",
-                "canceled": %s
+                "canceled": 0
             }
             """.formatted(
             rawPushoverResponse.status(),
             rawPushoverResponse.request(),
             rawPushoverResponse.user(),
-            rawPushoverResponse.errors().get(0),
-            rawPushoverResponse.receipt(),
-            rawPushoverResponse.canceled()
+            rawPushoverResponse.errors().getFirst(),
+            rawPushoverResponse.receipt()
         )
             .replaceAll("[\\n ]", "");
 
@@ -68,7 +68,7 @@ public class PushoverHttpClientTest {
             """.formatted(
             rawSoundResponse.status(),
             rawSoundResponse.request(),
-            rawSoundResponse.errors().get(0),
+            rawSoundResponse.errors().getFirst(),
             rawSoundResponse.token()
         ).replaceAll("[\\n ]", "");
 
@@ -121,5 +121,14 @@ public class PushoverHttpClientTest {
 
         assertEquals(expected, JsonMapper.toJsonOrNull(rawReceiptMessage));
         assertEquals(rawReceiptMessage, JsonMapper.fromJson(expected, RawReceiptResponse.class));
+
+        class FailingClass {
+            @SuppressWarnings("unused")
+            public String getAttr() {
+                throw new IllegalStateException();
+            }
+        }
+
+        assertNull(JsonMapper.toJsonOrNull(new FailingClass()));
     }
 }

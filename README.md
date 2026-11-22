@@ -1,6 +1,8 @@
 # Pushover4j
 
 ![master](https://github.com/YoouDo/pushover4j/actions/workflows/master.yaml/badge.svg)
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=YoouDo_pushover4j&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=YoouDo_pushover4j)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=YoouDo_pushover4j&metric=coverage)](https://sonarcloud.io/summary/new_code?id=YoouDo_pushover4j)
 
 ### A Pushover client in Java
 
