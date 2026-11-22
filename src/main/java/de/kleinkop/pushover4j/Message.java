@@ -108,7 +108,7 @@ public class Message {
     }
 
     public static class Builder {
-        final private Message template;
+        private final Message template;
 
         private Builder(String msg) {
             this.template = new Message(msg);

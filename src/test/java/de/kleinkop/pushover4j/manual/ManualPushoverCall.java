@@ -9,10 +9,10 @@ import java.io.File;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
-abstract public class ManualPushoverCall {
-    final private PushoverClient pushoverClient;
+public abstract class ManualPushoverCall {
+    private final PushoverClient pushoverClient;
 
-    final private PushoverClient failingPushoverClient;
+    private final PushoverClient failingPushoverClient;
 
     protected String device = System.getenv("PUSHOVER_DEVICE");
     protected String sound = System.getenv("PUSHOVER_SOUND");

@@ -17,8 +17,8 @@ import javax.net.ssl.SSLException;
 public class HttpRetry {
     private static final Logger logger = LoggerFactory.getLogger(HttpRetry.class);
 
-    final private HttpClient client;
-    final private int maxRetries;
+    private final HttpClient client;
+    private final int maxRetries;
     private final long retryInterval;
 
     public HttpRetry(HttpClient client, int maxRetries, long retryInterval) {
@@ -63,7 +63,9 @@ public class HttpRetry {
                 new RetryException(status, body)
             );
         } else {
-            logger.debug("Successful retry: {}", resp.body());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Successful retry: {}", resp.body());
+            }
             return CompletableFuture.completedFuture(resp);
         }
     }

@@ -39,7 +39,7 @@ jobs:
           path: build/libs
 
       - name: Send Pushover message
-        uses: umahmood/pushover-actions@main
+        uses: umahmood/pushover-actions@0582cb24dccd1fe77aeb35e6fb8027ddbca8af35
         env:
           PUSHOVER_TOKEN: ${{ secrets.PUSHOVER_TOKEN }}
           PUSHOVER_USER: ${{ secrets.PUSHOVER_USER }}

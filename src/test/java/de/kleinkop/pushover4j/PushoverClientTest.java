@@ -7,6 +7,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 
+import de.kleinkop.pushover4j.http.PushoverApiPaths;
 import de.kleinkop.pushover4j.http.PushoverHttpClient;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -60,18 +61,20 @@ public class PushoverClientTest {
 
     @BeforeAll
     static void beforeAll(WireMockRuntimeInfo runtimeInfo) {
+        PushoverApiPaths apiPaths = PushoverApiPaths.defaultsWithApiHost("http://localhost:" + runtimeInfo.getHttpPort());
         pushoverClient = new PushoverHttpClient(
             "app-token",
             "user-token",
             5,
             10L
-        ).withApiHost("http://localhost:" + runtimeInfo.getHttpPort())
+        )
+            .withApiPaths(apiPaths)
             .withHttpTimeout(10L);
 
         invalidClient = new PushoverHttpClient(
             "invalid-token",
             null
-        ).withApiHost("http://localhost:" + runtimeInfo.getHttpPort());
+        ).withApiPaths(apiPaths);
     }
 
     @Test
@@ -86,45 +89,56 @@ public class PushoverClientTest {
         assertEquals("invalid", sounds.token());
         assertNotNull(sounds.errors());
         assertEquals(1, sounds.errors().size());
-        assertEquals("application token is invalid", sounds.errors().get(0));
+        assertEquals("application token is invalid", sounds.errors().getFirst());
         assertEquals("error-request", sounds.request());
     }
 
     @Test
     void testInvalidMessages() {
-        // emergency msg without retry and expiration
+        final Message.Builder emergencyMsgWithoutRetryAndExpiration =
+            Message
+                .of("msg")
+                .withPriority(Priority.EMERGENCY);
+
         assertThrows(
             IllegalArgumentException.class,
-            () -> Message.of("msg")
-                .withPriority(Priority.EMERGENCY)
-                .build()
+            emergencyMsgWithoutRetryAndExpiration::build
         );
 
         // emergency msg without expiration
+        final Message.Builder emergencyMsgWithoutExpiration =
+            Message
+                .of("msg")
+                .withPriority(Priority.EMERGENCY)
+                .withRetry(30);
+
         assertThrows(
             IllegalArgumentException.class,
-            () -> Message.of("msg")
-                .withPriority(Priority.EMERGENCY)
-                .withRetry(30)
-                .build()
+            emergencyMsgWithoutExpiration::build
         );
 
         // emergency msg without retry
+        final Message.Builder msgWithoutRetry =
+            Message
+                .of("msg")
+                .withPriority(Priority.EMERGENCY)
+                .withExpiration(60);
+
         assertThrows(
             IllegalArgumentException.class,
-            () -> Message.of("msg")
-                .withPriority(Priority.EMERGENCY)
-                .withExpiration(60)
-                .build()
+            msgWithoutRetry::build
         );
 
         // Message with options html and monospace
+        final Message.Builder msgWithHtmlAndMonospace =
+            Message
+                .of("msg")
+                .withHtml(true)
+                .withMonospace(true);
+
         assertThrows(
             IllegalArgumentException.class,
-            () -> Message.of("msg")
-                .withHtml(true)
-                .withMonospace(true)
-                .build()
+            msgWithHtmlAndMonospace::build
         );
     }
 
@@ -165,9 +179,9 @@ public class PushoverClientTest {
             .toList();
 
         assertEquals(1, loggedRequests.size());
-        assertEquals("app-token", partAsString(loggedRequests.get(0), "token"));
-        assertEquals("user-token", partAsString(loggedRequests.get(0), "user"));
-        assertEquals("Testing", partAsString(loggedRequests.get(0), "message"));
+        assertEquals("app-token", partAsString(loggedRequests.getFirst(), "token"));
+        assertEquals("user-token", partAsString(loggedRequests.getFirst(), "user"));
+        assertEquals("Testing", partAsString(loggedRequests.getFirst(), "message"));
     }
 
     @Test
@@ -195,7 +209,7 @@ public class PushoverClientTest {
             .stream()
             .filter(LoggedRequest::isMultipart)
             .toList();
-        final LoggedRequest request = loggedRequests.get(loggedRequests.size() - 1);
+        final LoggedRequest request = loggedRequests.getLast();
 
         assertEquals("app-token", partAsString(request, "token"));
         assertEquals("user-token", partAsString(request, "user"));
@@ -224,7 +238,7 @@ public class PushoverClientTest {
             .stream()
             .filter(LoggedRequest::isMultipart)
             .toList();
-        final LoggedRequest request = loggedRequests.get(loggedRequests.size() - 1);
+        final LoggedRequest request = loggedRequests.getLast();
         assertFalse(hasPart(request, "title"));
         assertFalse(hasPart(request, "url"));
         assertFalse(hasPart(request, "url_title"));
@@ -232,9 +246,10 @@ public class PushoverClientTest {
 
     @Test
     void testEncryptedMessageRejectsMissingOrMalformedKeys() {
+        final Message secretMessage = Message.of("Secret message").build();
         final PushoverException missingKeyException = assertThrows(
             PushoverException.class,
-            () -> pushoverClient.sendEncryptedMessage(Message.of("Secret message").build(), null)
+            () -> pushoverClient.sendEncryptedMessage(secretMessage, null)
         );
         assertEquals(
             "An encryption key is required and must be a 64-character hexadecimal value",
@@ -243,7 +258,7 @@ public class PushoverClientTest {
 
         final PushoverException malformedKeyException = assertThrows(
             PushoverException.class,
-            () -> pushoverClient.sendEncryptedMessage(Message.of("Secret message").build(), "not-a-valid-key")
+            () -> pushoverClient.sendEncryptedMessage(secretMessage, "not-a-valid-key")
         );
         assertEquals(
             "An encryption key is required and must be a 64-character hexadecimal value",
@@ -318,7 +333,8 @@ public class PushoverClientTest {
                 )
         );
 
-        final RuntimeException exception = assertThrows(PushoverException.class, () -> pushoverClient.sendMessage(Message.of("Testing").build()));
+        final Message testMessage = Message.of("Testing").build();
+        final RuntimeException exception = assertThrows(PushoverException.class, () -> pushoverClient.sendMessage(testMessage));
         assertTrue(exception.getMessage().startsWith("Sending message to Pushover failed"));
     }
 
@@ -461,7 +477,12 @@ public class PushoverClientTest {
         return request.getParts().stream().anyMatch(part -> part.getName().equals(name));
     }
 
-    private void assertEncryptedValue(LoggedRequest request, String name, String expected, String encryptionKey)
+    private void assertEncryptedValue(
+        LoggedRequest request,
+        String name,
+        String expected,
+        @SuppressWarnings("SameParameterValue") String encryptionKey
+    )
         throws GeneralSecurityException, IOException {
         final String encryptedValue = partAsString(request, name);
         assertNotEquals(expected, encryptedValue);
