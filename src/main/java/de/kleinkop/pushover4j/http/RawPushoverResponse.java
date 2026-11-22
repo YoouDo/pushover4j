@@ -34,7 +34,7 @@ public record RawPushoverResponse(
 
     private ApplicationUsage extractApplicationUsage(HttpHeaders headers) {
         final Map<String, Optional<String>> params = Stream.of(
-            ApplicationUsage.KEY_LIMIT,
+                ApplicationUsage.KEY_LIMIT,
                 ApplicationUsage.KEY_REMAINING,
                 ApplicationUsage.KEY_RESET
             )

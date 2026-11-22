@@ -23,7 +23,6 @@ public class EmergencyCall extends ManualPushoverCall {
                 .withExpiration(120)
                 .build()
         );
-
         assertEquals(1, response.status());
 
         var receipt = response.receipt();

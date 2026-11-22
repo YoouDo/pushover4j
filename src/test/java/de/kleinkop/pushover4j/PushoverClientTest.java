@@ -35,6 +35,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToIgnoreCase;
 import static com.github.tomakehurst.wiremock.client.WireMock.findAll;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
@@ -53,8 +54,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @WireMockTest
 public class PushoverClientTest {
+    public static final String APP_TOKEN = "app-token";
+    public static final String USER_TOKEN = "user-token";
+    public static final String INVALID_TOKEN = "invalid-token";
     static PushoverClient pushoverClient;
     static PushoverClient invalidClient;
+    static PushoverClient oneRetryClient;
 
     final LocalDateTime deliveredAt = LocalDateTime.parse("2023-01-07T10:00:00");
     final LocalDateTime expiresAt = LocalDateTime.parse("2023-01-07T11:00:00");
@@ -63,16 +68,26 @@ public class PushoverClientTest {
     static void beforeAll(WireMockRuntimeInfo runtimeInfo) {
         PushoverApiPaths apiPaths = PushoverApiPaths.defaultsWithApiHost("http://localhost:" + runtimeInfo.getHttpPort());
         pushoverClient = new PushoverHttpClient(
-            "app-token",
-            "user-token",
+            APP_TOKEN,
+            USER_TOKEN,
             5,
             10L
         )
             .withApiPaths(apiPaths)
-            .withHttpTimeout(10L);
+            .withHttpTimeout(1L);
+
+        oneRetryClient = new PushoverHttpClient(
+            APP_TOKEN,
+            USER_TOKEN,
+            1,
+            10L
+        )
+            .withApiPaths(apiPaths)
+            .withHttpTimeout(1L);
+
 
         invalidClient = new PushoverHttpClient(
-            "invalid-token",
+            INVALID_TOKEN,
             null
         ).withApiPaths(apiPaths);
     }
@@ -179,8 +194,8 @@ public class PushoverClientTest {
             .toList();
 
         assertEquals(1, loggedRequests.size());
-        assertEquals("app-token", partAsString(loggedRequests.getFirst(), "token"));
-        assertEquals("user-token", partAsString(loggedRequests.getFirst(), "user"));
+        assertEquals(APP_TOKEN, partAsString(loggedRequests.getFirst(), "token"));
+        assertEquals(USER_TOKEN, partAsString(loggedRequests.getFirst(), "user"));
         assertEquals("Testing", partAsString(loggedRequests.getFirst(), "message"));
     }
 
@@ -211,8 +226,8 @@ public class PushoverClientTest {
             .toList();
         final LoggedRequest request = loggedRequests.getLast();
 
-        assertEquals("app-token", partAsString(request, "token"));
-        assertEquals("user-token", partAsString(request, "user"));
+        assertEquals(APP_TOKEN, partAsString(request, "token"));
+        assertEquals(USER_TOKEN, partAsString(request, "user"));
         assertEquals("1", partAsString(request, "encrypted"));
         assertEquals("1", partAsString(request, "priority"));
         assertEncryptedValue(request, "message", "Secret message", encryptionKey);
@@ -284,7 +299,7 @@ public class PushoverClientTest {
 
         assertEquals(1, response.status());
         assertEquals("C", response.request());
-        assertEquals("R", response.receipt());
+        assertEquals("receipt-id", response.receipt());
 
         final Optional<LoggedRequest> first = findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
             .stream()
@@ -299,7 +314,7 @@ public class PushoverClientTest {
         assertEquals("2", partAsString(request, "priority"));
         assertEquals("TAG", partAsString(request, "tags"));
 
-        ReceiptResponse receiptResponse = pushoverClient.getEmergencyState("R");
+        ReceiptResponse receiptResponse = pushoverClient.getEmergencyState("receipt-id");
 
         assertEquals(1, receiptResponse.status());
         assertEquals("D", receiptResponse.request());
@@ -391,11 +406,166 @@ public class PushoverClientTest {
         assertEquals(6, loggedRequests.size());
         var last = loggedRequests.get(5);
 
-        assertEquals("app-token", partAsString(last, "token"));
-        assertEquals("user-token", partAsString(last, "user"));
+        assertEquals(APP_TOKEN, partAsString(last, "token"));
+        assertEquals(USER_TOKEN, partAsString(last, "user"));
         assertEquals("Testing", partAsString(last, "message"));
 
         verify(6, postRequestedFor(urlPathEqualTo("/1/messages.json")));
+    }
+
+    @Test
+    @DisplayName("Retry when transient exception is thrown")
+    void testRetryWhenTransientExceptionIsThrown() {
+        var scenario = "Transient-Retry";
+        final String responseBody = """
+                    {
+                        "status": 1,
+                        "request": "B"
+                    }
+            """;
+        stubFor(
+            post("/1/messages.json")
+                .inScenario(scenario)
+                .whenScenarioStateIs(Scenario.STARTED)
+                .willReturn(
+                    aResponse().withFixedDelay(1100).withStatus(200).withBody(
+                        responseBody
+                    )
+                )
+                .willSetStateTo("STEP-1")
+        );
+
+            stubFor(
+                post("/1/messages.json")
+                    .inScenario(scenario)
+                    .whenScenarioStateIs("STEP-1")
+                    .willReturn(
+                        aResponse().withFixedDelay(1100).withStatus(200).withBody(responseBody)
+                    )
+                    .willSetStateTo("STEP-2")
+            );
+
+        stubFor(
+            post("/1/messages.json")
+                .inScenario(scenario)
+                .whenScenarioStateIs("STEP-2")
+                .willReturn(
+                    okJson(responseBody)
+                )
+        );
+
+        final PushoverResponse response = pushoverClient.sendMessage(Message.of("Testing").build());
+        assertEquals(1, response.status());
+        assertEquals("B", response.request());
+
+        final List<LoggedRequest> loggedRequests = findAll(postRequestedFor(urlPathEqualTo("/1/messages.json")))
+            .stream()
+            .filter(LoggedRequest::isMultipart)
+            .toList();
+
+        assertEquals(3, loggedRequests.size());
+        var last = loggedRequests.getLast();
+
+        assertEquals(APP_TOKEN, partAsString(last, "token"));
+        assertEquals(USER_TOKEN, partAsString(last, "user"));
+        assertEquals("Testing", partAsString(last, "message"));
+
+        verify(3, postRequestedFor(urlPathEqualTo("/1/messages.json")));
+    }
+
+    @Test
+    void testRetryAndFail() {
+        var scenario = "Transient-Retry-Fail";
+        final String responseBody = """
+                    {
+                        "status": 1,
+                        "request": "B"
+                    }
+            """;
+
+        stubFor(
+            post("/1/messages.json")
+                .inScenario(scenario)
+                .whenScenarioStateIs(Scenario.STARTED)
+                .willReturn(
+                    aResponse().withFixedDelay(1100).withStatus(200).withBody(
+                        responseBody
+                    )
+                )
+                .willSetStateTo("STEP-1")
+        );
+
+        stubFor(
+            post("/1/messages.json")
+                .inScenario(scenario)
+                .whenScenarioStateIs("STEP-1")
+                .willReturn(
+                    aResponse().withFixedDelay(1100).withStatus(200).withBody(
+                        responseBody
+                    )
+                )
+                .willSetStateTo("STEP-2")
+        );
+
+        stubFor(
+            post("/1/messages.json")
+                .inScenario(scenario)
+                .whenScenarioStateIs("STEP-2")
+                .willReturn(
+                    aResponse().withFixedDelay(1100).withStatus(200).withBody(responseBody)
+                )
+                .willSetStateTo("STEP-2")
+        );
+
+        final Message retryAndFailMsg = Message.of("Testing").build();
+        assertThrows(PushoverException.class, () -> oneRetryClient.sendMessage(retryAndFailMsg));
+
+        // One retry and fail
+        verify(2, postRequestedFor(urlPathEqualTo("/1/messages.json")));
+
+    }
+
+    @Test
+    void testCancelEmergencyMessage() {
+        stubsForEmergencyMessage();
+
+        stubFor(
+            post("/1/receipts/receipt-id/cancel.json")
+                .withRequestBody(equalToIgnoreCase(
+                    "token=app-token"))
+                .willReturn(aResponse().withStatus(200).withBody(
+                    """
+                    {
+                        "status": 1,
+                        "request": "C",
+                        "receipt": "receipt-id"
+                    }
+                    """
+                ))
+        );
+
+        final PushoverResponse response = pushoverClient.sendMessage(
+            Message.of("Testing emergency")
+                .withPriority(Priority.EMERGENCY)
+                .withRetry(100)
+                .withExpiration(200)
+                .withTag("TAG")
+                .withTimestamp(OffsetDateTime.now())
+                .withImage(new File(TestUtils.getResource("/testdata/image.png").getFile()))
+                .build()
+        );
+
+        assertEquals(1, response.status());
+        assertEquals("C", response.request());
+        assertEquals("receipt-id", response.receipt());
+
+        var cancelResponse = pushoverClient.cancelEmergencyMessage("receipt-id");
+        assertEquals(1, cancelResponse.status());
+
+        var newState = pushoverClient.getEmergencyState("receipt-id");
+        assertEquals(1, newState.status());
+        assertTrue(newState.expired());
+
     }
 
     private void stubsForEmergencyMessage() {
@@ -405,7 +575,7 @@ public class PushoverClientTest {
                     okJson(
                         """
                                 {
-                                    "receipt": "R",
+                                    "receipt": "receipt-id",
                                     "status": 1,
                                     "request": "C"
                                 }
@@ -415,7 +585,7 @@ public class PushoverClientTest {
         );
 
         stubFor(
-            get("/1/receipts/R.json?token=app-token")
+            get("/1/receipts/receipt-id.json?token=app-token")
                 .willReturn(
                     okJson(
                         """
