@@ -12,27 +12,14 @@ import de.kleinkop.pushover4j.SoundResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.Base64;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
-import java.util.zip.GZIPOutputStream;
-
-import javax.crypto.Cipher;
-import javax.crypto.Mac;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class PushoverHttpClient implements PushoverClient {
     private static final Logger logger = LoggerFactory.getLogger(PushoverHttpClient.class);
@@ -40,25 +27,15 @@ public class PushoverHttpClient implements PushoverClient {
     private static final Long HTTP_TIMEOUT_IN_SECONDS = 30L;
     private static final int RETRY_ATTEMPTS = 5;
     private static final long DEFAULT_RETRY_INTERVAL = 5000L;
-    private static final int ENCRYPTION_KEY_LENGTH_BYTES = 32;
-    private static final String ENCRYPTION_KEY_PATTERN = "[0-9a-fA-F]{64}";
-    private static final String INVALID_ENCRYPTION_KEY_MESSAGE = "An encryption key is required and must be a 64-character hexadecimal value";
-    private static final int IV_LENGTH_BYTES = 16;
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
-    private final static String API_MESSAGE_PATH = "/1/messages.json";
-    private final static String API_SOUNDS_PATH = "/1/sounds.json";
-    private final static String API_RECEIPT_PATH = "/1/receipts/";
-    private final static String API_CANCEL_PATH = "/1/receipts/{RECEIPT_ID}/cancel.json";
-    private final static String API_CANCEL_BY_TAG_PATH = "/1/receipts/cancel_by_tag/";
 
     private final String appToken;
     private final String userToken;
 
-    private String apiHost = "https://api.pushover.net";
+    private PushoverApiPaths pushoverApiPaths = PushoverApiPaths.defaults();
+
     private Long httpTimeout = HTTP_TIMEOUT_IN_SECONDS;
 
-    final private HttpRetry httpRetry;
+    private final HttpRetry httpRetry;
 
     public PushoverHttpClient(String appToken, String userToken) {
         this(appToken, userToken, RETRY_ATTEMPTS, DEFAULT_RETRY_INTERVAL);
@@ -77,11 +54,11 @@ public class PushoverHttpClient implements PushoverClient {
             .connectTimeout(Duration.ofSeconds(HTTP_TIMEOUT_IN_SECONDS))
             .build();
 
-        httpRetry = new HttpRetry(httpClient, retryAttempts, retryInterval);
+        this.httpRetry = new HttpRetry(httpClient, retryAttempts, retryInterval);
     }
 
-    public PushoverHttpClient withApiHost(String apiHost) {
-        this.apiHost = apiHost;
+    public PushoverHttpClient withApiPaths(PushoverApiPaths apiPaths) {
+        this.pushoverApiPaths = apiPaths;
         return this;
     }
 
@@ -99,69 +76,23 @@ public class PushoverHttpClient implements PushoverClient {
 
     @Override
     public PushoverResponse sendMessage(Message msg) {
-        return sendMessageToServer(msg, Optional.empty());
+        return sendMessageToServer(msg, null);
     }
 
     @Override
     public PushoverResponse sendEncryptedMessage(Message msg, String encryptionKey) {
-        validateEncryptionKey(encryptionKey);
-        return sendMessageToServer(msg, Optional.of(encryptionKey));
+        PushoverEncryption.validateEncryptionKey(encryptionKey);
+        return sendMessageToServer(msg, encryptionKey);
     }
 
-    private String encrypt(String value, String encryptionKey) throws GeneralSecurityException, IOException {
-        final byte[] key = decodeEncryptionKey(encryptionKey);
-        final byte[] iv = new byte[IV_LENGTH_BYTES];
-        SECURE_RANDOM.nextBytes(iv);
-
-        final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
-        final byte[] ciphertext = cipher.doFinal(gzip(value));
-
-        final Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(key, "HmacSHA256"));
-        mac.update(iv);
-        mac.update(ciphertext);
-        final byte[] hmac = mac.doFinal();
-
-        final byte[] payload = new byte[iv.length + ciphertext.length + hmac.length];
-        System.arraycopy(iv, 0, payload, 0, iv.length);
-        System.arraycopy(ciphertext, 0, payload, iv.length, ciphertext.length);
-        System.arraycopy(hmac, 0, payload, iv.length + ciphertext.length, hmac.length);
-        return Base64.getEncoder().encodeToString(payload);
-    }
-
-    private byte[] decodeEncryptionKey(String encryptionKey) {
-        validateEncryptionKey(encryptionKey);
-
-        final byte[] key = new byte[ENCRYPTION_KEY_LENGTH_BYTES];
-        for (int i = 0; i < key.length; i++) {
-            key[i] = (byte) Integer.parseInt(encryptionKey.substring(i * 2, i * 2 + 2), 16);
-        }
-        return key;
-    }
-
-    private void validateEncryptionKey(String encryptionKey) {
-        if (encryptionKey == null || !encryptionKey.matches(ENCRYPTION_KEY_PATTERN)) {
-            throw new PushoverException(INVALID_ENCRYPTION_KEY_MESSAGE);
-        }
-    }
-
-    private byte[] gzip(String value) throws IOException {
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
-            gzip.write(value.getBytes(StandardCharsets.UTF_8));
-        }
-        return output.toByteArray();
-    }
-
-    private String maybeEncryptedValue(String value, Optional<String> encryptionKey) throws GeneralSecurityException, IOException {
-        if (value == null || encryptionKey.isEmpty()) {
+    private String maybeEncryptedValue(String value, String encryptionKey) {
+        if (value == null || encryptionKey == null) {
             return value;
         }
-        return encrypt(value, encryptionKey.get());
+        return PushoverEncryption.encrypt(value, encryptionKey);
     }
 
-    private PushoverResponse sendMessageToServer(Message msg, Optional<String> encryptionKey) {
+    private PushoverResponse sendMessageToServer(Message msg, String encryptionKey) {
         try {
             final MultipartFormData bodyData = new HttpClientMultipartFormBody()
                 .plus("token", this.appToken)
@@ -185,10 +116,10 @@ public class PushoverHttpClient implements PushoverClient {
                 .plusIfSet("tags", msg.getTags())
                 .plusImageIfSet("attachment", msg.getImage())
                 .plusIfSet("ttl", msg.getTtl())
-                .plusIfSet("encrypted", encryptionKey.isPresent(), () -> "1")
+                .plusIfSet("encrypted", encryptionKey != null, () -> "1")
                 .build(UUID.randomUUID().toString());
 
-            final HttpRequest request = defaultRequest(apiHost + API_MESSAGE_PATH)
+            final HttpRequest request = defaultRequest(pushoverApiPaths.messagePath())
                 .header("Content-Type", bodyData.boundary())
                 .POST(
                     HttpRequest.BodyPublishers.ofByteArrays(bodyData.byteArrays())
@@ -196,7 +127,6 @@ public class PushoverHttpClient implements PushoverClient {
                 .build();
 
             final HttpResponse<String> response = httpRequest(request);
-            logger.info("Response: {}", response.body());
             return JsonMapper.fromJson(response.body(), RawPushoverResponse.class).toDomain(response.headers());
         } catch (Exception e) {
             logger.warn("Error while sending request", e);
@@ -281,18 +211,18 @@ public class PushoverHttpClient implements PushoverClient {
     }
 
     private String apiSoundsUrl() {
-        return apiHost + API_SOUNDS_PATH + "?token=" + appToken;
+        return pushoverApiPaths.soundsPath() + "?token=" + appToken;
     }
 
     private String apiReceiptUrl(String receiptId) {
-        return apiHost + API_RECEIPT_PATH + receiptId + ".json?token=" + appToken;
+        return pushoverApiPaths.receiptPath() + receiptId + ".json?token=" + appToken;
     }
 
     private String apiCancelUrl(String receiptId) {
-        return apiHost + API_CANCEL_PATH.replace("{RECEIPT_ID}", receiptId);
+        return pushoverApiPaths.cancelPath().replace("{RECEIPT_ID}", receiptId);
     }
 
     private String apiCancelByTagUrl(String tag) {
-        return apiHost + API_CANCEL_BY_TAG_PATH + tag + ".json";
+        return pushoverApiPaths.cancelByTagPath() + tag + ".json";
     }
 }
